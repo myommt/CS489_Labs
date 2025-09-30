@@ -1,40 +1,57 @@
 package lab2a;
 
 import java.time.LocalDate;
-import java.time.Month;
 import java.time.YearMonth;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+ 
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         List<Employee> employees = loadData();
 
-        // Determine next quarter relative to today
-        LocalDate today = LocalDate.now();
-        Quarter next = Quarter.nextQuarter(today);
+        // Setup Jackson mapper
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        System.out.println("Quarterly Upcoming Enrollees report for next quarter: " + next);
-        System.out.println("Quarter start: " + next.getStart() + " end: " + next.getEnd());
+        String cmd = (args != null && args.length > 0) ? args[0].toLowerCase() : "help";
+        switch (cmd) {
+            case "list":
+                // 1. Print all employees JSON: sorted by yearlySalary desc, lastName asc
+                List<Employee> sortedAll = employees.stream()
+                    .sorted(Comparator.comparingDouble(Employee::getYearlySalary).reversed()
+                        .thenComparing(Employee::getLastName))
+                    .toList();
+                System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(sortedAll));
+                break;
+            case "upcoming":
+                // Determine next quarter
+                LocalDate today = LocalDate.now();
+                Quarter next = Quarter.nextQuarter(today);
 
-        List<Employee> upcoming = new ArrayList<>();
-        for (Employee e : employees) {
-            // eligible date is employmentDate + 3 years
-            LocalDate elig = e.getEligibilityDate();
-            boolean inNextQuarter = ( !elig.isBefore(next.getStart()) ) && ( !elig.isAfter(next.getEnd()) );
-            if (inNextQuarter && !e.isEnrolled()) {
-                upcoming.add(e);
-            }
-        }
+        List<Employee> upcoming = employees.stream()
+                        .filter(e -> {
+                            LocalDate elig = e.getEligibilityDate();
+                            return (!elig.isBefore(next.getStart())) && (!elig.isAfter(next.getEnd())) && !e.isEnrolled();
+                        })
+                        // sorted in descending order of employmentDate
+            .sorted(Comparator.comparing(Employee::getEmploymentDate).reversed())
+            .toList();
 
-        if (upcoming.isEmpty()) {
-            System.out.println("No upcoming enrollees found for the next quarter.");
-        } else {
-            System.out.println("Employees who will reach 3 years in the next quarter and are NOT enrolled:");
-            for (Employee e : upcoming) {
-                System.out.printf("%s %s (employeeId=%d) employmentDate=%s eligibilityDate=%s yearlySalary=%.2f\n",
-                        e.getFirstName(), e.getLastName(), e.getEmployeeId(), e.getEmploymentDate(), e.getEligibilityDate(), e.getYearlySalary());
-            }
+                System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(upcoming));
+                break;
+            default:
+                System.out.println("Usage: java -cp target/classes lab2a.Main <command>");
+                System.out.println("Commands:");
+                System.out.println("  list     - prints all Employees (with PensionPlan info) in JSON. Sorted by yearlySalary desc, lastName asc.");
+                System.out.println("  upcoming - prints Quarterly Upcoming Enrollees report in JSON. Employees NOT enrolled and eligible during next quarter. Sorted by employmentDate desc.");
+                break;
         }
     }
 
@@ -45,22 +62,19 @@ public class Main {
         // Data rows based on problem statement. Note: some plan reference numbers are missing (null) per table layout.
         // 1 EX1089 Daniel Agar 105,945.50 2023-01-17 null $100.00
         Employee e1 = new Employee(1, "Daniel", "Agar", "2023-01-17", 105945.50);
-        PensionPlan p1 = new PensionPlan("EX1089", null, 100.00);
-        // Enrollment date null -> not enrolled
-        e1.setPensionPlan(null);
+    // Enrollment date null -> not enrolled
+    e1.setPensionPlan(null);
         list.add(e1);
 
         // 2 Benard Shaw 197,750.00 2022-09-03 2025-09-03 null
         Employee e2 = new Employee(2, "Benard", "Shaw", "2022-09-03", 197750.00);
-        PensionPlan p2 = new PensionPlan(null, "2025-09-03", null);
-        // has enrollment date -> enrolled
-        e2.setPensionPlan(p2);
+    // has enrollment date -> enrolled
+    e2.setPensionPlan(new PensionPlan(null, "2025-09-03", null));
         list.add(e2);
 
         // 3 SM2307 Carly Agar 842,000.75 2014-05-16 2017-05-17 $1,555.50
         Employee e3 = new Employee(3, "Carly", "Agar", "2014-05-16", 842000.75);
-        PensionPlan p3 = new PensionPlan("SM2307", "2017-05-17", 1555.50);
-        e3.setPensionPlan(p3);
+    e3.setPensionPlan(new PensionPlan("SM2307", "2017-05-17", 1555.50));
         list.add(e3);
 
         // 4 Wesley Schneider 74,500.00 2023-07-21 (no plan info)

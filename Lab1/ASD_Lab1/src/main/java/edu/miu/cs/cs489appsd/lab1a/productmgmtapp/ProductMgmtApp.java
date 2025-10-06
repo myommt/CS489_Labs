@@ -30,32 +30,32 @@ public class ProductMgmtApp {
     }
 
     private static void printJson(Product[] products) {
-        logger.info("\nJSON Format:");
-        logger.info("[");
+        System.out.println("\nJSON Format:");
+        System.out.println("[");
         for (int i = 0; i < products.length; i++) {
             Product p = products[i];
-            logger.info(String.format("  {\"productId\": \"%s\", \"name\": \"%s\", \"dateSupplied\": \"%s\", \"quantityInStock\": %d, \"unitPrice\": %.2f}%s",
+            System.out.println(String.format("  {\"productId\": \"%s\", \"name\": \"%s\", \"dateSupplied\": \"%s\", \"quantityInStock\": %d, \"unitPrice\": %.2f}%s",
                 p.getProductId(), p.getName(), p.getDateSupplied(), p.getQuantityInStock(), p.getUnitPrice(),
                 (i < products.length - 1) ? "," : ""));
         }
-        logger.info("]");
+        System.out.println("]");
     }
 
     private static void printXml(Product[] products) {
-        logger.info("\nXML Format:");
-        logger.info("<products>");
+        System.out.println("\nXML Format:");
+        System.out.println("<products>");
         for (Product p : products) {
-            logger.info(String.format("  <product><productId>%s</productId><name>%s</name><dateSupplied>%s</dateSupplied><quantityInStock>%d</quantityInStock><unitPrice>%.2f</unitPrice></product>",
+            System.out.println(String.format("  <product><productId>%s</productId><name>%s</name><dateSupplied>%s</dateSupplied><quantityInStock>%d</quantityInStock><unitPrice>%.2f</unitPrice></product>",
                 p.getProductId(), p.getName(), p.getDateSupplied(), p.getQuantityInStock(), p.getUnitPrice()));
         }
-        logger.info("</products>");
+        System.out.println("</products>");
     }
 
     private static void printCsv(Product[] products) {
-        logger.info("\nCSV Format:");
-        logger.info("productId,name,dateSupplied,quantityInStock,unitPrice");
+        System.out.println("\nCSV Format:");
+        System.out.println("productId,name,dateSupplied,quantityInStock,unitPrice");
         for (Product p : products) {
-            logger.info(String.format("%s,%s,%s,%d,%.2f",
+            System.out.println(String.format("%s,%s,%s,%d,%.2f",
                 p.getProductId(), p.getName(), p.getDateSupplied(), p.getQuantityInStock(), p.getUnitPrice()));
         }
     }

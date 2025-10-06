@@ -1,5 +1,6 @@
 package edu.miu.cs.cs489appsd.lab1.productmgmtapp.model;
 
+
 import java.time.LocalDate;
 
 public class Product {

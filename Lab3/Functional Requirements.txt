@@ -1,0 +1,18 @@
+A Patient can request appointments by call-in.
+A Patient can request appointment from on-line.
+Patients can request to cancel or change their appointments.
+Patients can sign-in to the system
+Patients can view their appointments, dentists' details
+
+Office Manager can book the appointment and send a confirmation email notifying the Patient
+
+Dentists can sign-in to the system
+Dentists can view their appointments, Patients' details
+
+Dentist cannot be given more than 5 appointments in any given week
+Patient cannot request a new appointment, if there is an outstanding, unpaid bill for dental service
+
+
+Appointment is at one of ADS’s surgery locations
+
+

@@ -1,0 +1,210 @@
+# Created at 2025-10-06T11:40:51.019
+Oct 06, 2025 11:40:50 AM org.junit.platform.launcher.core.DefaultLauncher handleThrowable
+
+# Created at 2025-10-06T11:40:51.019
+WARNING: TestEngine with ID 'junit-vintage' failed to discover tests
+
+# Created at 2025-10-06T11:40:51.020
+org.junit.platform.commons.JUnitException: Unsupported version of junit:junit: 4.11. Please upgrade to version 4.12 or later.
+
+# Created at 2025-10-06T11:40:51.021
+	at org.junit.vintage.engine.JUnit4VersionCheck.checkSupported(JUnit4VersionCheck.java:39)
+
+# Created at 2025-10-06T11:40:51.022
+	at org.junit.vintage.engine.JUnit4VersionCheck.checkSupported(JUnit4VersionCheck.java:32)
+
+# Created at 2025-10-06T11:40:51.022
+	at org.junit.vintage.engine.VintageTestEngine.discover(VintageTestEngine.java:62)
+
+# Created at 2025-10-06T11:40:51.023
+	at org.junit.platform.launcher.core.DefaultLauncher.discoverEngineRoot(DefaultLauncher.java:168)
+
+# Created at 2025-10-06T11:40:51.024
+	at org.junit.platform.launcher.core.DefaultLauncher.discoverRoot(DefaultLauncher.java:155)
+
+# Created at 2025-10-06T11:40:51.025
+	at org.junit.platform.launcher.core.DefaultLauncher.discover(DefaultLauncher.java:120)
+
+# Created at 2025-10-06T11:40:51.025
+	at org.apache.maven.surefire.junitplatform.TestPlanScannerFilter.accept(TestPlanScannerFilter.java:56)
+
+# Created at 2025-10-06T11:40:51.026
+	at org.apache.maven.surefire.util.DefaultScanResult.applyFilter(DefaultScanResult.java:102)
+
+# Created at 2025-10-06T11:40:51.027
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.scanClasspath(JUnitPlatformProvider.java:129)
+
+# Created at 2025-10-06T11:40:51.027
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:117)
+
+# Created at 2025-10-06T11:40:51.028
+	at org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:384)
+
+# Created at 2025-10-06T11:40:51.029
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:345)
+
+# Created at 2025-10-06T11:40:51.030
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:126)
+
+# Created at 2025-10-06T11:40:51.030
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:418)
+
+# Created at 2025-10-06T11:40:51.031
+
+
+# Created at 2025-10-06T11:40:51.032
+Oct 06, 2025 11:40:51 AM org.junit.platform.launcher.core.DefaultLauncher handleThrowable
+
+# Created at 2025-10-06T11:40:51.032
+WARNING: TestEngine with ID 'junit-vintage' failed to discover tests
+
+# Created at 2025-10-06T11:40:51.033
+org.junit.platform.commons.JUnitException: Unsupported version of junit:junit: 4.11. Please upgrade to version 4.12 or later.
+
+# Created at 2025-10-06T11:40:51.033
+	at org.junit.vintage.engine.JUnit4VersionCheck.checkSupported(JUnit4VersionCheck.java:39)
+
+# Created at 2025-10-06T11:40:51.034
+	at org.junit.vintage.engine.JUnit4VersionCheck.checkSupported(JUnit4VersionCheck.java:32)
+
+# Created at 2025-10-06T11:40:51.034
+	at org.junit.vintage.engine.VintageTestEngine.discover(VintageTestEngine.java:62)
+
+# Created at 2025-10-06T11:40:51.035
+	at org.junit.platform.launcher.core.DefaultLauncher.discoverEngineRoot(DefaultLauncher.java:168)
+
+# Created at 2025-10-06T11:40:51.035
+	at org.junit.platform.launcher.core.DefaultLauncher.discoverRoot(DefaultLauncher.java:155)
+
+# Created at 2025-10-06T11:40:51.036
+	at org.junit.platform.launcher.core.DefaultLauncher.discover(DefaultLauncher.java:120)
+
+# Created at 2025-10-06T11:40:51.037
+	at org.apache.maven.surefire.junitplatform.TestPlanScannerFilter.accept(TestPlanScannerFilter.java:56)
+
+# Created at 2025-10-06T11:40:51.037
+	at org.apache.maven.surefire.util.DefaultScanResult.applyFilter(DefaultScanResult.java:102)
+
+# Created at 2025-10-06T11:40:51.038
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.scanClasspath(JUnitPlatformProvider.java:129)
+
+# Created at 2025-10-06T11:40:51.039
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:117)
+
+# Created at 2025-10-06T11:40:51.039
+	at org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:384)
+
+# Created at 2025-10-06T11:40:51.040
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:345)
+
+# Created at 2025-10-06T11:40:51.041
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:126)
+
+# Created at 2025-10-06T11:40:51.042
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:418)
+
+# Created at 2025-10-06T11:40:51.042
+
+
+# Created at 2025-10-06T11:40:51.043
+Oct 06, 2025 11:40:51 AM org.junit.platform.launcher.core.DefaultLauncher handleThrowable
+
+# Created at 2025-10-06T11:40:51.044
+WARNING: TestEngine with ID 'junit-vintage' failed to discover tests
+
+# Created at 2025-10-06T11:40:51.045
+org.junit.platform.commons.JUnitException: Unsupported version of junit:junit: 4.11. Please upgrade to version 4.12 or later.
+
+# Created at 2025-10-06T11:40:51.046
+	at org.junit.vintage.engine.JUnit4VersionCheck.checkSupported(JUnit4VersionCheck.java:39)
+
+# Created at 2025-10-06T11:40:51.047
+	at org.junit.vintage.engine.JUnit4VersionCheck.checkSupported(JUnit4VersionCheck.java:32)
+
+# Created at 2025-10-06T11:40:51.048
+	at org.junit.vintage.engine.VintageTestEngine.discover(VintageTestEngine.java:62)
+
+# Created at 2025-10-06T11:40:51.048
+	at org.junit.platform.launcher.core.DefaultLauncher.discoverEngineRoot(DefaultLauncher.java:168)
+
+# Created at 2025-10-06T11:40:51.049
+	at org.junit.platform.launcher.core.DefaultLauncher.discoverRoot(DefaultLauncher.java:155)
+
+# Created at 2025-10-06T11:40:51.049
+	at org.junit.platform.launcher.core.DefaultLauncher.discover(DefaultLauncher.java:120)
+
+# Created at 2025-10-06T11:40:51.050
+	at org.apache.maven.surefire.junitplatform.TestPlanScannerFilter.accept(TestPlanScannerFilter.java:56)
+
+# Created at 2025-10-06T11:40:51.051
+	at org.apache.maven.surefire.util.DefaultScanResult.applyFilter(DefaultScanResult.java:102)
+
+# Created at 2025-10-06T11:40:51.052
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.scanClasspath(JUnitPlatformProvider.java:129)
+
+# Created at 2025-10-06T11:40:51.053
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:117)
+
+# Created at 2025-10-06T11:40:51.054
+	at org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:384)
+
+# Created at 2025-10-06T11:40:51.056
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:345)
+
+# Created at 2025-10-06T11:40:51.056
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:126)
+
+# Created at 2025-10-06T11:40:51.057
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:418)
+
+# Created at 2025-10-06T11:40:51.058
+
+
+# Created at 2025-10-06T11:40:51.059
+Oct 06, 2025 11:40:51 AM org.junit.platform.launcher.core.DefaultLauncher handleThrowable
+
+# Created at 2025-10-06T11:40:51.060
+WARNING: TestEngine with ID 'junit-vintage' failed to discover tests
+
+# Created at 2025-10-06T11:40:51.062
+org.junit.platform.commons.JUnitException: Unsupported version of junit:junit: 4.11. Please upgrade to version 4.12 or later.
+
+# Created at 2025-10-06T11:40:51.063
+	at org.junit.vintage.engine.JUnit4VersionCheck.checkSupported(JUnit4VersionCheck.java:39)
+
+# Created at 2025-10-06T11:40:51.064
+	at org.junit.vintage.engine.JUnit4VersionCheck.checkSupported(JUnit4VersionCheck.java:32)
+
+# Created at 2025-10-06T11:40:51.066
+	at org.junit.vintage.engine.VintageTestEngine.discover(VintageTestEngine.java:62)
+
+# Created at 2025-10-06T11:40:51.067
+	at org.junit.platform.launcher.core.DefaultLauncher.discoverEngineRoot(DefaultLauncher.java:168)
+
+# Created at 2025-10-06T11:40:51.067
+	at org.junit.platform.launcher.core.DefaultLauncher.discoverRoot(DefaultLauncher.java:155)
+
+# Created at 2025-10-06T11:40:51.068
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:128)
+
+# Created at 2025-10-06T11:40:51.069
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:142)
+
+# Created at 2025-10-06T11:40:51.069
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:117)
+
+# Created at 2025-10-06T11:40:51.069
+	at org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:384)
+
+# Created at 2025-10-06T11:40:51.070
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:345)
+
+# Created at 2025-10-06T11:40:51.071
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:126)
+
+# Created at 2025-10-06T11:40:51.072
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:418)
+
+# Created at 2025-10-06T11:40:51.073
+
+

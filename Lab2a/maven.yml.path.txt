@@ -1,0 +1,2 @@
+https://github.com/myommt/CS489_Labs/blob/f42bb6b28cf8c3d2de66eb7d122808213ace4dcd/.github/workflows/lab2a.yml
+https://github.com/myommt/CS489_Labs/blob/f42bb6b28cf8c3d2de66eb7d122808213ace4dcd/.github/workflows/maven.yml

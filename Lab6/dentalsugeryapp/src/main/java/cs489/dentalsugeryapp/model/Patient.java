@@ -35,6 +35,10 @@ public class Patient {
     private String email;
     
     @Column(name = "dob")
-    private LocalDate dob;     
+    private LocalDate dob;
+    
+    @OneToOne(cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "billing_address_id", nullable= true )// @JoinColumn(name = "address_id", nullable= true,unique=true )
+    private Address address;
 
 }

@@ -9,7 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "patient")
 @Entity
 @Table(name = "addresses")
 public class Address {
@@ -33,4 +33,8 @@ public class Address {
     @Column(name = "zipcode", nullable = false, length = 100)
     @NotBlank(message="zipcode is required and cannot be blank or empty.")
     private String zipcode;
+
+    @OneToOne(mappedBy = "address")
+    private Patient patient;
+
 }

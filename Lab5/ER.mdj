@@ -2071,7 +2071,8 @@
 								},
 								"reference": {
 									"$ref": "AAAAAAGZtWZYYdG5cuA="
-								}
+								},
+								"cardinality": "0..*"
 							}
 						}
 					],

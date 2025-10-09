@@ -1,0 +1,31 @@
+package cs489.dentalsugeryapp.model;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import lombok.*;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+@ToString
+@Entity
+@Table(name = "surgerylocations")
+public class SurgeryLocation {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "surgeryLocationId")
+    private Integer surgeryLocationId;
+    
+    @Column(name = "name", nullable = false, length = 100)
+    @NotBlank(message = "Surgery location name is required and cannot be blank.")
+    private String name;
+    
+    @Column(name = "contactNumber")
+    private String contactNumber;
+
+    @OneToOne
+    @JoinColumn(name = "addressId")
+    private Address location;
+}

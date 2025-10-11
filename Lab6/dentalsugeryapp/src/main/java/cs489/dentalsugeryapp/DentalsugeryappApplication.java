@@ -32,8 +32,8 @@ public class DentalsugeryappApplication implements CommandLineRunner {
 
 
 		// Create 
-		var address1 = new Address(null, "123 Main St", "Fairfield", "IA", "52556", null);
-		var address2 = new Address(null, "456 Elm St", "Los Angeles", "CA", "90001", null);
+		var address1 = new Address(null, "123 Main St", "Fairfield", "IA", "52556");
+		var address2 = new Address(null, "456 Elm St", "Los Angeles", "CA", "90001");
 		
 		// Create patients
 		var patient1 = new Patient(null, "John", "Doe", "641-001-1234", "JD123@fairfield.org", LocalDate.parse("1984-10-20"), address1);

@@ -34,7 +34,11 @@ public class Address {
     @NotBlank(message="zipcode is required and cannot be blank or empty.")
     private String zipcode;
 
-    @OneToOne(mappedBy = "address")
-    private Patient patient;
+    // @OneToMany(mappedBy = "billing_address_id")
+    // private Patient patient;
+
+    // @OneToMany(mappedBy = "addressId")
+    // private SurgeryLocation surgeryLocation;
+
 
 }

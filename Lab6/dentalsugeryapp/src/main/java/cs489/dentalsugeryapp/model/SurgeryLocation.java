@@ -25,7 +25,7 @@ public class SurgeryLocation {
     @Column(name = "contactNumber")
     private String contactNumber;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "addressId")
     private Address location;
 }

@@ -37,7 +37,7 @@ public class Patient {
     @Column(name = "dob")
     private LocalDate dob;
     
-    @OneToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "billing_address_id", nullable= true )// @JoinColumn(name = "address_id", nullable= true,unique=true )
     private Address address;
 

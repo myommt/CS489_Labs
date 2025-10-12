@@ -15,6 +15,7 @@ public interface PatientService {
     Patient updatePatient(Patient patient) throws PatientNotFoundException;
     boolean deletePatientById(Integer id);
     List<Patient> searchPatients(String searchString);
+    Patient findOrCreatePatient(Patient patient);
 
 }
 

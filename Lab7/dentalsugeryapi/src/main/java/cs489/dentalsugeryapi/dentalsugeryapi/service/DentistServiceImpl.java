@@ -26,7 +26,8 @@ public class DentistServiceImpl implements DentistService {
         if (dentist == null) {
             throw new IllegalArgumentException("Dentist cannot be null");
         }
-        return dentistRepository.save(dentist);
+        // Use findOrCreate to prevent duplicates
+        return findOrCreateDentist(dentist);
     }
 
     @Override
@@ -144,5 +145,19 @@ public class DentistServiceImpl implements DentistService {
     @Transactional(readOnly = true)
     public long getTotalDentistCount() {
         return dentistRepository.count();
+    }
+
+    @Override
+    public Dentist findOrCreateDentist(Dentist dentist) {
+        // Check if dentist exists by email (assuming email is unique identifier)
+        if (dentist.getEmail() != null && !dentist.getEmail().trim().isEmpty()) {
+            Dentist existingDentist = dentistRepository.findByEmailIgnoreCase(dentist.getEmail());
+            if (existingDentist != null) {
+                return existingDentist;
+            }
+        }
+        
+        // Dentist doesn't exist, create new one
+        return dentistRepository.save(dentist);
     }
 }

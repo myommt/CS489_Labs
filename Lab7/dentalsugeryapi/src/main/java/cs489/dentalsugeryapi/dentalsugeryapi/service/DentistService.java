@@ -49,4 +49,7 @@ public interface DentistService {
     
     // Get total count of dentists
     long getTotalDentistCount();
+    
+    // Find or create dentist (to avoid duplicates)
+    Dentist findOrCreateDentist(Dentist dentist);
 }

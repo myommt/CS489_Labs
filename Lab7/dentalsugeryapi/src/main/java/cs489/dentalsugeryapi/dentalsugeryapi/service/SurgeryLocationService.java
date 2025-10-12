@@ -49,4 +49,7 @@ public interface SurgeryLocationService {
     
     // Get total count of surgery locations
     long getTotalSurgeryLocationCount();
+    
+    // Find or create surgery location (to avoid duplicates)
+    SurgeryLocation findOrCreateSurgeryLocation(SurgeryLocation surgeryLocation);
 }

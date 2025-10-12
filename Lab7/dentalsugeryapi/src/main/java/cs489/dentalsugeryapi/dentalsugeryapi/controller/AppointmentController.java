@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import cs489.dentalsugeryapi.dentalsugeryapi.dto.*;
 import cs489.dentalsugeryapi.dentalsugeryapi.model.*;
 import cs489.dentalsugeryapi.dentalsugeryapi.service.*;
+import cs489.dentalsugeryapi.dentalsugeryapi.exception.AppointmentLimitExceededException;
 
 @RestController
 @RequestMapping(value = "/dentalsugery/api/appointments")

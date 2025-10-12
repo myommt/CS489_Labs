@@ -34,4 +34,7 @@ public interface DentistRepository extends JpaRepository<Dentist, Integer> {
     
     // Check if email exists
     boolean existsByEmail(String email);
+    
+    // Find dentist by email (returns null if not found, for findOrCreate)
+    Dentist findByEmailIgnoreCase(String email);
 }

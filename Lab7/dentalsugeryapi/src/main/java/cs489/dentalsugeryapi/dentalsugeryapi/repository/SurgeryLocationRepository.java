@@ -2,6 +2,7 @@ package cs489.dentalsugeryapi.dentalsugeryapi.repository;
 
 
 import cs489.dentalsugeryapi.dentalsugeryapi.model.SurgeryLocation;
+import cs489.dentalsugeryapi.dentalsugeryapi.model.Address;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -37,4 +38,8 @@ public interface SurgeryLocationRepository extends JpaRepository<SurgeryLocation
     
     // Check if name exists
     boolean existsByName(String name);
+    
+    // Find surgery location by name and address (for findOrCreate - to avoid duplicates)
+    @Query("SELECT sl FROM SurgeryLocation sl WHERE sl.name = :name AND sl.location = :location")
+    SurgeryLocation findByNameAndLocation(@Param("name") String name, @Param("location") Address location);
 }

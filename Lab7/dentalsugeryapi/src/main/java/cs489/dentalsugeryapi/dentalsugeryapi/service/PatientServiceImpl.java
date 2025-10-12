@@ -25,12 +25,8 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     public Patient addNewPatient(Patient patient) {
-        // If patient has an address, find existing or create new address
-        if (patient.getAddress() != null) {
-            Address savedAddress = addressService.findOrCreateAddress(patient.getAddress());
-            patient.setAddress(savedAddress);
-        }
-        return patientRepository.save(patient); 
+        // Use findOrCreate to prevent duplicates and handle address relationships
+        return findOrCreatePatient(patient);
     }
 
     @Override
@@ -124,6 +120,26 @@ public class PatientServiceImpl implements PatientService {
     public List<Patient> searchPatients(String searchString) {
         return patientRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
                 searchString, searchString, searchString);
+    }
+
+    @Override
+    public Patient findOrCreatePatient(Patient patient) {
+        // Check if patient exists by email (assuming email is unique identifier)
+        if (patient.getEmail() != null && !patient.getEmail().trim().isEmpty()) {
+            Patient existingPatient = patientRepository.findByEmail(patient.getEmail());
+            if (existingPatient != null) {
+                return existingPatient;
+            }
+        }
+        
+        // If patient has an address, use findOrCreate for address
+        if (patient.getAddress() != null) {
+            Address managedAddress = addressService.findOrCreateAddress(patient.getAddress());
+            patient.setAddress(managedAddress);
+        }
+        
+        // Patient doesn't exist, create new one
+        return patientRepository.save(patient);
     }
 
 }

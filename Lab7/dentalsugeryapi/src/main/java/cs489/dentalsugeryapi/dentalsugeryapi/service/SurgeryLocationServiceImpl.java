@@ -2,6 +2,7 @@ package cs489.dentalsugeryapi.dentalsugeryapi.service;
 
  
 import cs489.dentalsugeryapi.dentalsugeryapi.model.SurgeryLocation;
+import cs489.dentalsugeryapi.dentalsugeryapi.model.Address;
 import cs489.dentalsugeryapi.dentalsugeryapi.repository.SurgeryLocationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,10 +16,12 @@ import java.util.Optional;
 public class SurgeryLocationServiceImpl implements SurgeryLocationService {
 
     private final SurgeryLocationRepository surgeryLocationRepository;
+    private final AddressService addressService;
 
     @Autowired
-    public SurgeryLocationServiceImpl(SurgeryLocationRepository surgeryLocationRepository) {
+    public SurgeryLocationServiceImpl(SurgeryLocationRepository surgeryLocationRepository, AddressService addressService) {
         this.surgeryLocationRepository = surgeryLocationRepository;
+        this.addressService = addressService;
     }
 
     @Override
@@ -26,7 +29,8 @@ public class SurgeryLocationServiceImpl implements SurgeryLocationService {
         if (surgeryLocation == null) {
             throw new IllegalArgumentException("Surgery location cannot be null");
         }
-        return surgeryLocationRepository.save(surgeryLocation);
+        // Use findOrCreate to prevent duplicates and handle address relationships
+        return findOrCreateSurgeryLocation(surgeryLocation);
     }
 
     @Override
@@ -141,5 +145,29 @@ public class SurgeryLocationServiceImpl implements SurgeryLocationService {
     @Transactional(readOnly = true)
     public long getTotalSurgeryLocationCount() {
         return surgeryLocationRepository.count();
+    }
+
+    @Override
+    public SurgeryLocation findOrCreateSurgeryLocation(SurgeryLocation surgeryLocation) {
+        // Check if surgery location exists by name and location
+        if (surgeryLocation.getName() != null && !surgeryLocation.getName().trim().isEmpty() 
+            && surgeryLocation.getLocation() != null) {
+            
+            // Use findOrCreate for address first
+            Address managedAddress = 
+                addressService.findOrCreateAddress(surgeryLocation.getLocation());
+            
+            SurgeryLocation existingLocation = surgeryLocationRepository.findByNameAndLocation(
+                surgeryLocation.getName(), managedAddress);
+            if (existingLocation != null) {
+                return existingLocation;
+            }
+            
+            // Set the managed address before saving
+            surgeryLocation.setLocation(managedAddress);
+        }
+        
+        // Surgery location doesn't exist, create new one
+        return surgeryLocationRepository.save(surgeryLocation);
     }
 }

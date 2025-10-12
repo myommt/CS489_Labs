@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import cs489.dentalsugeryapi.dentalsugeryapi.model.Patient;
+import cs489.dentalsugeryapi.dentalsugeryapi.model.Address;
 
 public interface PatientRepository extends JpaRepository<Patient, Integer> {
     
@@ -16,6 +17,9 @@ public interface PatientRepository extends JpaRepository<Patient, Integer> {
             String firstName, String lastName, String email);
     
     // Method to find all patients by address
-    List<Patient> findByAddress(cs489.dentalsugeryapi.dentalsugeryapi.model.Address address);
+    List<Patient> findByAddress(Address address);
+    
+    // Method to check if patient exists by email (assuming email is unique identifier)
+    Patient findByEmail(String email);
 
 }

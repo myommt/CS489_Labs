@@ -39,7 +39,7 @@ public interface SurgeryLocationService {
     Optional<SurgeryLocation> updateSurgeryLocation(Integer surgeryLocationId, SurgeryLocation surgeryLocation);
     
     // Delete surgery location by ID
-    void deleteSurgeryLocationById(Integer surgeryLocationId);
+    boolean deleteSurgeryLocationById(Integer surgeryLocationId);
     
     // Check if surgery location exists by ID
     boolean existsById(Integer surgeryLocationId);

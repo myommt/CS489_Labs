@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import cs489.dentalsugeryapi.dentalsugeryapi.dto.DentistResponseDTO;
+import cs489.dentalsugeryapi.dentalsugeryapi.dto.DeleteResponseDTO;
 import cs489.dentalsugeryapi.dentalsugeryapi.model.Dentist;
 import cs489.dentalsugeryapi.dentalsugeryapi.service.DentistService;
 
@@ -59,9 +60,15 @@ public class DentistController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDentist(@PathVariable Integer id) {
-        dentistService.deleteDentistById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<DeleteResponseDTO> deleteDentist(@PathVariable Integer id) {
+        boolean deleted = dentistService.deleteDentistById(id);
+        if (deleted) {
+            DeleteResponseDTO response = new DeleteResponseDTO(true, "Dentist with ID " + id + " has been successfully deleted.");
+            return ResponseEntity.ok(response);
+        } else {
+            DeleteResponseDTO response = new DeleteResponseDTO(false, "Dentist with ID " + id + " not found.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
     }
 
     private DentistResponseDTO mapToDTO(Dentist dentist) {

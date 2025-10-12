@@ -77,9 +77,15 @@ public class AppointmentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAppointment(@PathVariable Integer id) {
-        appointmentService.deleteAppointmentById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<DeleteResponseDTO> deleteAppointment(@PathVariable Integer id) {
+        boolean deleted = appointmentService.deleteAppointmentById(id);
+        if (deleted) {
+            DeleteResponseDTO response = new DeleteResponseDTO(true, "Appointment with ID " + id + " has been successfully deleted.");
+            return ResponseEntity.ok(response);
+        } else {
+            DeleteResponseDTO response = new DeleteResponseDTO(false, "Appointment with ID " + id + " not found.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
     }
 
     private AppointmentResponseDTO mapToDTO(Appointment appointment) {
@@ -179,7 +185,7 @@ public class AppointmentController {
                 address.setCity(dto.patientRequestDTO().addressRequestDTO().city());
                 address.setState(dto.patientRequestDTO().addressRequestDTO().state());
                 address.setZipcode(dto.patientRequestDTO().addressRequestDTO().zipcode());
-                address = addressService.addNewAddress(address);
+                address = addressService.findOrCreateAddress(address);
                 patient.setAddress(address);
             }
             
@@ -213,7 +219,7 @@ public class AppointmentController {
                 address.setCity(dto.surgeryLocationRequestDTO().addressRequestDTO().city());
                 address.setState(dto.surgeryLocationRequestDTO().addressRequestDTO().state());
                 address.setZipcode(dto.surgeryLocationRequestDTO().addressRequestDTO().zipcode());
-                address = addressService.addNewAddress(address);
+                address = addressService.findOrCreateAddress(address);
                 location.setLocation(address);
             }
             

@@ -111,10 +111,12 @@ public class SurgeryLocationServiceImpl implements SurgeryLocationService {
     }
 
     @Override
-    public void deleteSurgeryLocationById(Integer surgeryLocationId) {
+    public boolean deleteSurgeryLocationById(Integer surgeryLocationId) {
         if (surgeryLocationId != null && surgeryLocationRepository.existsById(surgeryLocationId)) {
             surgeryLocationRepository.deleteById(surgeryLocationId);
+            return true;
         }
+        return false;
     }
 
     @Override

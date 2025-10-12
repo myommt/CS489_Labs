@@ -39,7 +39,7 @@ public interface DentistService {
     Optional<Dentist> updateDentist(Integer dentistId, Dentist dentist);
     
     // Delete dentist by ID
-    void deleteDentistById(Integer dentistId);
+    boolean deleteDentistById(Integer dentistId);
     
     // Check if dentist exists by ID
     boolean existsById(Integer dentistId);

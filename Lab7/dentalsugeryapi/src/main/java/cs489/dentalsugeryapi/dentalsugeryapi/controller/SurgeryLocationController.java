@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import cs489.dentalsugeryapi.dentalsugeryapi.dto.SurgeryLocationResponseDTO;
 import cs489.dentalsugeryapi.dentalsugeryapi.dto.AddressResponseDTO;
+import cs489.dentalsugeryapi.dentalsugeryapi.dto.DeleteResponseDTO;
 import cs489.dentalsugeryapi.dentalsugeryapi.model.SurgeryLocation;
 import cs489.dentalsugeryapi.dentalsugeryapi.service.SurgeryLocationService;
 
@@ -105,9 +106,15 @@ public class SurgeryLocationController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSurgeryLocation(@PathVariable Integer id) {
-        surgeryLocationService.deleteSurgeryLocationById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<DeleteResponseDTO> deleteSurgeryLocation(@PathVariable Integer id) {
+        boolean deleted = surgeryLocationService.deleteSurgeryLocationById(id);
+        if (deleted) {
+            DeleteResponseDTO response = new DeleteResponseDTO(true, "Surgery Location with ID " + id + " has been successfully deleted.");
+            return ResponseEntity.ok(response);
+        } else {
+            DeleteResponseDTO response = new DeleteResponseDTO(false, "Surgery Location with ID " + id + " not found.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
     }
 
     @GetMapping("/exists/{id}")

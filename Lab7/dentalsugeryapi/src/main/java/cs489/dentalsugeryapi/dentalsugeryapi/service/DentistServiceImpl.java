@@ -114,10 +114,12 @@ public class DentistServiceImpl implements DentistService {
     }
 
     @Override
-    public void deleteDentistById(Integer dentistId) {
+    public boolean deleteDentistById(Integer dentistId) {
         if (dentistId != null && dentistRepository.existsById(dentistId)) {
             dentistRepository.deleteById(dentistId);
+            return true;
         }
+        return false;
     }
 
     @Override

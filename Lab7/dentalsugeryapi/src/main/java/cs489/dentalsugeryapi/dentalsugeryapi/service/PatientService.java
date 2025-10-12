@@ -10,9 +10,11 @@ public interface PatientService {
 
     Patient addNewPatient(Patient patient);
     List<PatientResponseDTO> getAllPatients();  
+    List<PatientResponseDTO> getAllPatientsSortedByLastName();
     Patient getPatientById(Integer id) throws PatientNotFoundException; 
-    Patient updatePatient(Patient patient);
-    void deletePatientById(Integer id);
+    Patient updatePatient(Patient patient) throws PatientNotFoundException;
+    boolean deletePatientById(Integer id);
+    List<Patient> searchPatients(String searchString);
 
 }
 

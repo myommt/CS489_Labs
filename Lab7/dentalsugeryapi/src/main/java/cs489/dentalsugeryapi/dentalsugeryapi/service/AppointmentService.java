@@ -9,6 +9,6 @@ public interface AppointmentService {
     List<Appointment> getAllAppointments();
     Appointment getAppointmentById(Integer id);
     Appointment updateAppointment(Appointment appointment);
-    void deleteAppointmentById(Integer id);
+    boolean deleteAppointmentById(Integer id);
     
 }

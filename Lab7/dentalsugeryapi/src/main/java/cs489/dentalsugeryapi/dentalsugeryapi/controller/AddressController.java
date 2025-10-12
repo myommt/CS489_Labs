@@ -1,13 +1,14 @@
 package cs489.dentalsugeryapi.dentalsugeryapi.controller;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import cs489.dentalsugeryapi.dentalsugeryapi.dto.AddressResponseDTO;
+import cs489.dentalsugeryapi.dentalsugeryapi.dto.AddressWithPatientsResponseDTO;
+import cs489.dentalsugeryapi.dentalsugeryapi.dto.DeleteResponseDTO;
 import cs489.dentalsugeryapi.dentalsugeryapi.model.Address;
 import cs489.dentalsugeryapi.dentalsugeryapi.service.AddressService;
 
@@ -22,12 +23,9 @@ public class AddressController {
     }
 
     @GetMapping
-    public ResponseEntity<List<AddressResponseDTO>> getAllAddresses() {
-        List<Address> addresses = addressService.getAllAddresses();
-        List<AddressResponseDTO> addressDTOs = addresses.stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(addressDTOs);
+    public ResponseEntity<List<AddressResponseDTO>> getAllAddressesSortedByCity() {
+        List<AddressResponseDTO> addresses = addressService.getAllAddressesSortedByCity();
+        return ResponseEntity.ok(addresses);
     }
 
     @GetMapping("/{id}")
@@ -56,9 +54,21 @@ public class AddressController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAddress(@PathVariable Integer id) {
-        addressService.deleteAddressById(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<DeleteResponseDTO> deleteAddress(@PathVariable Integer id) {
+        boolean deleted = addressService.deleteAddressById(id);
+        if (deleted) {
+            DeleteResponseDTO response = new DeleteResponseDTO(true, "Address with ID " + id + " has been successfully deleted.");
+            return ResponseEntity.ok(response);
+        } else {
+            DeleteResponseDTO response = new DeleteResponseDTO(false, "Address with ID " + id + " not found.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+    }
+
+    @GetMapping("/with-patients")
+    public ResponseEntity<List<AddressWithPatientsResponseDTO>> getAllAddressesWithPatientsSortedByCity() {
+        List<AddressWithPatientsResponseDTO> addresses = addressService.getAllAddressesWithPatientsSortedByCity();
+        return ResponseEntity.ok(addresses);
     }
 
     private AddressResponseDTO mapToDTO(Address address) {

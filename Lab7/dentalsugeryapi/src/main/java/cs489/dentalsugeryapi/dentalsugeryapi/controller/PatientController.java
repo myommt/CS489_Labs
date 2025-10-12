@@ -7,8 +7,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import cs489.dentalsugeryapi.dentalsugeryapi.model.Patient;
+import cs489.dentalsugeryapi.dentalsugeryapi.model.Address;
+import cs489.dentalsugeryapi.dentalsugeryapi.dto.AddressRequestDTO;
+import cs489.dentalsugeryapi.dentalsugeryapi.dto.PatientRequestDTO;
 import cs489.dentalsugeryapi.dentalsugeryapi.dto.PatientResponseDTO;
 import cs489.dentalsugeryapi.dentalsugeryapi.dto.AddressResponseDTO;
+import cs489.dentalsugeryapi.dentalsugeryapi.dto.DeleteResponseDTO;
 import cs489.dentalsugeryapi.dentalsugeryapi.service.PatientService;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,13 +35,14 @@ public class PatientController {
         this.patientService = patientService;
     }
 
-    @GetMapping(value ="")
+    @GetMapping
     public ResponseEntity<List<PatientResponseDTO>> getAllPatients() {
         return ResponseEntity.ok(patientService.getAllPatients());
     }
 
     @PostMapping
-    public ResponseEntity<PatientResponseDTO> createPatient(@RequestBody Patient patient) {
+    public ResponseEntity<PatientResponseDTO> createPatient(@RequestBody PatientRequestDTO patientRequestDTO) {
+        Patient patient = mapToEntity(patientRequestDTO);
         Patient createdPatient = patientService.addNewPatient(patient);
         return ResponseEntity.status(HttpStatus.CREATED).body(mapToDTO(createdPatient));
     }
@@ -53,12 +58,10 @@ public class PatientController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PatientResponseDTO> updatePatient(@PathVariable Integer id, @RequestBody Patient patient) {
+    public ResponseEntity<PatientResponseDTO> updatePatient(@PathVariable Integer id, @RequestBody PatientRequestDTO patientRequestDTO) {
         try {
-            // Verify the patient exists first
-            patientService.getPatientById(id);
-            
-            // Set the ID from the path to ensure we're updating the correct patient
+            // Convert DTO to entity and set the ID from the path
+            Patient patient = mapToEntity(patientRequestDTO);
             patient.setPatientId(id);
             
             Patient updatedPatient = patientService.updatePatient(patient);
@@ -69,16 +72,24 @@ public class PatientController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePatient(@PathVariable Integer id) {
-        try {
-            // Verify the patient exists first
-            patientService.getPatientById(id);
-            
-            patientService.deletePatientById(id);
-            return ResponseEntity.noContent().build();
-        } catch (PatientNotFoundException e) {
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<DeleteResponseDTO> deletePatient(@PathVariable Integer id) {
+        boolean deleted = patientService.deletePatientById(id);
+        if (deleted) {
+            DeleteResponseDTO response = new DeleteResponseDTO(true, "Patient with ID " + id + " has been successfully deleted.");
+            return ResponseEntity.ok(response);
+        } else {
+            DeleteResponseDTO response = new DeleteResponseDTO(false, "Patient with ID " + id + " not found.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
+    }
+
+    @GetMapping("/search/{searchString}")
+    public ResponseEntity<List<PatientResponseDTO>> searchPatients(@PathVariable String searchString) {
+        List<Patient> patients = patientService.searchPatients(searchString);
+        List<PatientResponseDTO> patientDTOs = patients.stream()
+                .map(this::mapToDTO)
+                .toList();
+        return ResponseEntity.ok(patientDTOs);
     }
 
     private PatientResponseDTO mapToDTO(Patient patient) {
@@ -102,6 +113,37 @@ public class PatientController {
                 patient.getDob(),
                 addressDTO
         );
+    }
+
+    private Patient mapToEntity(PatientRequestDTO patientRequestDTO) {
+        Patient patient = new Patient();
+        patient.setFirstName(patientRequestDTO.firstName());
+        patient.setLastName(patientRequestDTO.lastName());
+        patient.setContactNumber(patientRequestDTO.contactNumber());
+        patient.setEmail(patientRequestDTO.email());
+        patient.setDob(patientRequestDTO.dob());
+        
+        // Only create address if addressRequestDTO exists and all required fields are non-blank
+        if (patientRequestDTO.addressRequestDTO() != null) {
+            var addressDTO = patientRequestDTO.addressRequestDTO();
+            if (isValidAddressData(addressDTO)) {
+                Address address = new Address();
+                address.setStreet(addressDTO.street());
+                address.setCity(addressDTO.city());
+                address.setState(addressDTO.state());
+                address.setZipcode(addressDTO.zipcode());
+                patient.setAddress(address);
+            }
+        }
+        
+        return patient;
+    }
+    
+    private boolean isValidAddressData(AddressRequestDTO addressDTO) {
+        return addressDTO.street() != null && !addressDTO.street().trim().isEmpty() &&
+               addressDTO.city() != null && !addressDTO.city().trim().isEmpty() &&
+               addressDTO.state() != null && !addressDTO.state().trim().isEmpty() &&
+               addressDTO.zipcode() != null && !addressDTO.zipcode().trim().isEmpty();
     }
 
 }

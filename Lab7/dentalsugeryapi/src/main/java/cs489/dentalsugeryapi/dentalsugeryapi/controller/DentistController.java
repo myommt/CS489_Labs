@@ -1,0 +1,77 @@
+package cs489.dentalsugeryapi.dentalsugeryapi.controller;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import cs489.dentalsugeryapi.dentalsugeryapi.dto.DentistResponseDTO;
+import cs489.dentalsugeryapi.dentalsugeryapi.model.Dentist;
+import cs489.dentalsugeryapi.dentalsugeryapi.service.DentistService;
+
+@RestController
+@RequestMapping(value = "/dentalsugery/api/dentists")
+public class DentistController {
+
+    private final DentistService dentistService;
+
+    public DentistController(DentistService dentistService) {
+        this.dentistService = dentistService;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<DentistResponseDTO>> getAllDentists() {
+        List<Dentist> dentists = dentistService.getAllDentists();
+        List<DentistResponseDTO> dentistDTOs = dentists.stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dentistDTOs);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<DentistResponseDTO> getDentistById(@PathVariable Integer id) {
+        Optional<Dentist> dentist = dentistService.findDentistById(id);
+        return dentist.map(d -> ResponseEntity.ok(mapToDTO(d)))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/email/{email}")
+    public ResponseEntity<DentistResponseDTO> getDentistByEmail(@PathVariable String email) {
+        Optional<Dentist> dentist = dentistService.findDentistByEmail(email);
+        return dentist.map(d -> ResponseEntity.ok(mapToDTO(d)))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping
+    public ResponseEntity<DentistResponseDTO> createDentist(@RequestBody Dentist dentist) {
+        Dentist createdDentist = dentistService.saveDentist(dentist);
+        return ResponseEntity.status(HttpStatus.CREATED).body(mapToDTO(createdDentist));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<DentistResponseDTO> updateDentist(@PathVariable Integer id, @RequestBody Dentist dentist) {
+        dentist.setDentistId(id);
+        Dentist updatedDentist = dentistService.saveDentist(dentist);
+        return ResponseEntity.ok(mapToDTO(updatedDentist));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteDentist(@PathVariable Integer id) {
+        dentistService.deleteDentistById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    private DentistResponseDTO mapToDTO(Dentist dentist) {
+        return new DentistResponseDTO(
+                dentist.getDentistId(),
+                dentist.getFirstName(),
+                dentist.getLastName(),
+                dentist.getContactNumber(),
+                dentist.getEmail(),
+                dentist.getSpecialization()
+        );
+    }
+}

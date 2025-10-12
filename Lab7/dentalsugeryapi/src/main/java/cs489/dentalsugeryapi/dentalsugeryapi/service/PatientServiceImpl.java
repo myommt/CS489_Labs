@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 
 import cs489.dentalsugeryapi.dentalsugeryapi.exception.PatientNotFoundException;
 import cs489.dentalsugeryapi.dentalsugeryapi.model.Patient;
+import cs489.dentalsugeryapi.dentalsugeryapi.dto.PatientResponseDTO;
+import cs489.dentalsugeryapi.dentalsugeryapi.dto.AddressResponseDTO;
 import cs489.dentalsugeryapi.dentalsugeryapi.repository.PatientRepository;
 import cs489.dentalsugeryapi.dentalsugeryapi.service.PatientService;
 
@@ -25,8 +27,26 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
-    public List<Patient> getAllPatients() {
-        return patientRepository.findAll();
+    public List<PatientResponseDTO> getAllPatients() {
+        return patientRepository.findAll()
+                .stream()
+                .map(patient -> new PatientResponseDTO(
+                        patient.getPatientId(),
+                        patient.getFirstName(),
+                        patient.getLastName(),
+                        patient.getContactNumber(),
+                        patient.getEmail(),
+                        patient.getDob(),
+                            (patient.getAddress() != null)?
+                            new AddressResponseDTO(
+                                    patient.getAddress().getAddressId(),
+                                    patient.getAddress().getStreet(),
+                                    patient.getAddress().getCity(),
+                                    patient.getAddress().getState(),
+                                    patient.getAddress().getZipcode()
+                            ):null
+                ))
+                .toList();
     }
 
     @Override

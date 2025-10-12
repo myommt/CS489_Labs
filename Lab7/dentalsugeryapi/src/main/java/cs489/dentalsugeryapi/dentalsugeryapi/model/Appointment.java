@@ -18,7 +18,7 @@ public class Appointment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "appointmentId")
+    @Column(name = "appointment_id")
     private Integer appointmentId;
 
     @Column(name = "appointmentType", nullable = false, length = 50)

@@ -15,7 +15,7 @@ public class Dentist {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "dentistId")
+    @Column(name = "dentist_id")
     private Integer dentistId;
     
     @Column(name = "firstName", nullable = false, length = 100)

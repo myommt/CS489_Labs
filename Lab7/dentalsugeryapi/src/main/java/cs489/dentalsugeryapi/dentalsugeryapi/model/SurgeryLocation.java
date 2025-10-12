@@ -15,7 +15,7 @@ public class SurgeryLocation {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "surgeryLocationId")
+    @Column(name = "surgerylocation_id")
     private Integer surgeryLocationId;
     
     @Column(name = "name", nullable = false, length = 100)

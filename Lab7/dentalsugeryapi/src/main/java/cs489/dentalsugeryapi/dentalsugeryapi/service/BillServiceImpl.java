@@ -11,20 +11,21 @@ import cs489.dentalsugeryapi.dentalsugeryapi.dto.BillResponseDTO;
 import cs489.dentalsugeryapi.dentalsugeryapi.dto.BillResponseDTO.PatientBasicInfoDTO;
 import cs489.dentalsugeryapi.dentalsugeryapi.dto.BillResponseDTO.AppointmentBasicInfoDTO;
 import cs489.dentalsugeryapi.dentalsugeryapi.repository.BillRepository;
+import cs489.dentalsugeryapi.dentalsugeryapi.repository.AppointmentRepository;
 
 @Service
 public class BillServiceImpl implements BillService {
 
     private final BillRepository billRepository;
     private final PatientService patientService;
-    private final AppointmentService appointmentService;
+    private final AppointmentRepository appointmentRepository;
 
     public BillServiceImpl(BillRepository billRepository, 
                           PatientService patientService,
-                          AppointmentService appointmentService) {
+                          AppointmentRepository appointmentRepository) {
         this.billRepository = billRepository;
         this.patientService = patientService;
-        this.appointmentService = appointmentService;
+        this.appointmentRepository = appointmentRepository;
     }
 
     @Override
@@ -88,12 +89,15 @@ public class BillServiceImpl implements BillService {
         }
         
         if (bill.getAppointment() != null) {
-            try {
-                Appointment managedAppointment = appointmentService.findOrCreateAppointment(bill.getAppointment());
-                bill.setAppointment(managedAppointment);
-            } catch (Exception e) {
-                // Handle appointment creation exception
-                throw new RuntimeException("Error creating appointment for bill: " + e.getMessage(), e);
+            // For bills, we assume the appointment already exists
+            // We just save/use the existing appointment ID
+            Appointment appointment = bill.getAppointment();
+            if (appointment.getAppointmentId() != null) {
+                // Use existing appointment
+                Appointment existingAppointment = appointmentRepository.findById(appointment.getAppointmentId()).orElse(null);
+                if (existingAppointment != null) {
+                    bill.setAppointment(existingAppointment);
+                }
             }
         }
         

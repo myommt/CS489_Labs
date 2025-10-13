@@ -10,6 +10,7 @@ import cs489.dentalsugeryapi.dentalsugeryapi.dto.*;
 import cs489.dentalsugeryapi.dentalsugeryapi.model.*;
 import cs489.dentalsugeryapi.dentalsugeryapi.service.*;
 import cs489.dentalsugeryapi.dentalsugeryapi.exception.AppointmentLimitExceededException;
+import cs489.dentalsugeryapi.dentalsugeryapi.exception.OutstandingBillException;
 
 @RestController
 @RequestMapping(value = "/dentalsugery/api/appointments")
@@ -52,18 +53,25 @@ public class AppointmentController {
     }
 
     @PostMapping
-    public ResponseEntity<AppointmentResponseDTO> createAppointment(@RequestBody AppointmentRequestDTO appointmentRequestDTO) {
+    public ResponseEntity<?> createAppointment(@RequestBody AppointmentRequestDTO appointmentRequestDTO) {
         try {
             Appointment appointment = mapToEntity(appointmentRequestDTO);
             Appointment createdAppointment = appointmentService.addNewAppointment(appointment);
             return ResponseEntity.status(HttpStatus.CREATED).body(mapToDTO(createdAppointment));
+        } catch (OutstandingBillException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ErrorResponseDTO("Outstanding Bills", e.getMessage()));
+        } catch (AppointmentLimitExceededException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ErrorResponseDTO("Appointment Limit Exceeded", e.getMessage()));
         } catch (Exception _) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponseDTO("Bad Request", "Invalid appointment data provided"));
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<AppointmentResponseDTO> updateAppointment(@PathVariable Integer id, @RequestBody AppointmentRequestDTO appointmentRequestDTO) {
+    public ResponseEntity<?> updateAppointment(@PathVariable Integer id, @RequestBody AppointmentRequestDTO appointmentRequestDTO) {
         try {
             // Verify the appointment exists first
             appointmentService.getAppointmentById(id);
@@ -72,8 +80,15 @@ public class AppointmentController {
             appointment.setAppointmentId(id);
             Appointment updatedAppointment = appointmentService.updateAppointment(appointment);
             return ResponseEntity.ok(mapToDTO(updatedAppointment));
+        } catch (OutstandingBillException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ErrorResponseDTO("Outstanding Bills", e.getMessage()));
+        } catch (AppointmentLimitExceededException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ErrorResponseDTO("Appointment Limit Exceeded", e.getMessage()));
         } catch (Exception _) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponseDTO("Bad Request", "Invalid appointment data or appointment not found"));
         }
     }
 

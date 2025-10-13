@@ -12,6 +12,7 @@ import cs489.dentalsugeryapi.dentalsugeryapi.model.Patient;
 import cs489.dentalsugeryapi.dentalsugeryapi.model.Dentist;
 import cs489.dentalsugeryapi.dentalsugeryapi.model.SurgeryLocation;
 import cs489.dentalsugeryapi.dentalsugeryapi.exception.AppointmentLimitExceededException;
+import cs489.dentalsugeryapi.dentalsugeryapi.exception.OutstandingBillException;
 import cs489.dentalsugeryapi.dentalsugeryapi.repository.AppointmentRepository;
 
 @Service
@@ -21,19 +22,22 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final PatientService patientService;
     private final DentistService dentistService;
     private final SurgeryLocationService surgeryLocationService;
+    private final BillService billService;
 
     public AppointmentServiceImpl(AppointmentRepository appointmentRepository, 
                                  PatientService patientService,
                                  DentistService dentistService,
-                                 SurgeryLocationService surgeryLocationService) {
+                                 SurgeryLocationService surgeryLocationService,
+                                 BillService billService) {
         this.appointmentRepository = appointmentRepository;
         this.patientService = patientService;
         this.dentistService = dentistService;
         this.surgeryLocationService = surgeryLocationService;
+        this.billService = billService;
     }
 
     @Override
-    public Appointment addNewAppointment(Appointment appointment) throws AppointmentLimitExceededException {
+    public Appointment addNewAppointment(Appointment appointment) throws AppointmentLimitExceededException, OutstandingBillException {
         // Use findOrCreate to prevent duplicates and handle all entity relationships
         return findOrCreateAppointment(appointment);
     }
@@ -49,8 +53,9 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public Appointment updateAppointment(Appointment appointment) throws AppointmentLimitExceededException {
-        // Validate weekly limit before updating
+    public Appointment updateAppointment(Appointment appointment) throws AppointmentLimitExceededException, OutstandingBillException {
+        // Validate outstanding bills and weekly limit before updating
+        validatePatientOutstandingBills(appointment);
         validateDentistWeeklyLimit(appointment);
         return appointmentRepository.save(appointment);
     }
@@ -65,7 +70,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public Appointment findOrCreateAppointment(Appointment appointment) throws AppointmentLimitExceededException {
+    public Appointment findOrCreateAppointment(Appointment appointment) throws AppointmentLimitExceededException, OutstandingBillException {
         // Use findOrCreate for related entities first
         if (appointment.getPatient() != null) {
             Patient managedPatient = 
@@ -100,6 +105,9 @@ public class AppointmentServiceImpl implements AppointmentService {
                 return existingAppointment;
             }
         }
+        
+        // Validate patient outstanding bills before creating new appointment
+        validatePatientOutstandingBills(appointment);
         
         // Validate dentist weekly appointment limit before creating new appointment
         validateDentistWeeklyLimit(appointment);
@@ -143,6 +151,28 @@ public class AppointmentServiceImpl implements AppointmentService {
                     appointment.getDentist().getLastName(),
                     appointmentsInWeek,
                     weekStart.toLocalDate())
+            );
+        }
+    }
+
+    /**
+     * Validates that a patient doesn't have outstanding unpaid bills
+     * @param appointment The appointment being created/updated
+     * @throws OutstandingBillException if the patient has unpaid bills
+     */
+    private void validatePatientOutstandingBills(Appointment appointment) throws OutstandingBillException {
+        if (appointment.getPatient() == null) {
+            return; // Cannot validate without patient
+        }
+        
+        // Check if patient has outstanding bills
+        boolean hasOutstandingBills = billService.hasOutstandingBills(appointment.getPatient().getPatientId());
+        
+        if (hasOutstandingBills) {
+            throw new OutstandingBillException(
+                String.format("Patient %s %s has outstanding unpaid bills. Please settle all outstanding bills before scheduling a new appointment.",
+                    appointment.getPatient().getFirstName(),
+                    appointment.getPatient().getLastName())
             );
         }
     }

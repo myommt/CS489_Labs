@@ -1,0 +1,47 @@
+<header th:fragment="header" xmlns:th="http://www.thymeleaf.org">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <h2><i class="fas fa-tooth"></i> Dental Surgery</h2>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01"
+                aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarColor01">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">Home
+                            <span class="visually-hidden">(current)</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/about">About Us</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Appointments</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button"
+                            aria-haspopup="true" aria-expanded="false">Management</a>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="/secured/patient/list">Patients</a>
+                            <a class="dropdown-item" href="/secured/dentist/list">Dentists</a>
+                            <a class="dropdown-item" href="/secured/appointment/list">Appointments</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="/secured/index">Admin Dashboard</a>
+                        </div>
+                    </li>
+                </ul>
+                <div>
+                    <a class="btn btn-outline-light" href="/login">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>

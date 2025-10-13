@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://thymeleaf.org">
+
+<head th:replace="~{fragments/head-elements :: headElements}">
+    <title>Dental Surgery - Patient List</title>
+</head>
+
+<body>
+    <div id="page-content">
+        <header th:replace="~{fragments/header :: header}"></header>
+        <main class="container mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="text-primary">
+                    <i class="fas fa-users"></i> Patient Management
+                </h1>
+                <div>
+                    <a href="/secured/patient/new" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Add New Patient
+                    </a>
+                    <a href="/secured/index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <!-- Search and Filter Section -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-search"></i> Search & Filter</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" action="/secured/patient/search">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" name="lastName"
+                                    placeholder="Search by last name...">
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" name="firstName"
+                                    placeholder="Search by first name...">
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Patients Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-list"></i> All Patients</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Patient Number</th>
+                                    <th>Name</th>
+                                    <th>Date of Birth</th>
+                                    <th>Phone</th>
+                                    <th>Email</th>
+                                    <th>Address</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:if="${patients != null and !patients.empty}" th:each="patient : ${patients}">
+                                    <td th:text="${patient.patientId}">1</td>
+                                    <td th:text="${patient.patientNumber}">P001</td>
+                                    <td>
+                                        <strong th:text="${patient.firstName + ' ' + patient.lastName}">John
+                                            Doe</strong>
+                                    </td>
+                                    <td th:text="${patient.dateOfBirth}">1990-01-01</td>
+                                    <td th:text="${patient.phone}">555-0123</td>
+                                    <td th:text="${patient.email}">john@example.com</td>
+                                    <td th:if="${patient.address != null}"
+                                        th:text="${patient.address.street + ', ' + patient.address.city + ', ' + patient.address.state}">
+                                        123 Main St, City, State
+                                    </td>
+                                    <td th:if="${patient.address == null}">
+                                        <span class="text-muted">No address</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a th:href="@{/secured/patient/edit/{id}(id=${patient.patientId})}"
+                                                class="btn btn-sm btn-outline-primary" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a th:href="@{/secured/patient/view/{id}(id=${patient.patientId})}"
+                                                class="btn btn-sm btn-outline-info" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" title="Delete"
+                                                onclick="confirmDelete()">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${patients == null or patients.empty}">
+                                    <td colspan="8" class="text-center text-muted py-4">
+                                        <i class="fas fa-user-slash fa-2x mb-2"></i>
+                                        <br>
+                                        No patients found. <a href="/secured/patient/new">Add the first patient</a>.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Card -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <h4 class="text-primary" th:text="${patients != null ? patients.size() : 0}">0</h4>
+                            <small class="text-muted">Total Patients</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-success">0</h4>
+                            <small class="text-muted">Active Today</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-info">0</h4>
+                            <small class="text-muted">Scheduled This Week</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-warning">0</h4>
+                            <small class="text-muted">Outstanding Bills</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
+    </div>
+
+    <script>
+        function confirmDelete() {
+            if (confirm('Are you sure you want to delete this patient? This action cannot be undone.')) {
+                // Implement delete functionality
+                alert('Delete functionality would be implemented here.');
+            }
+        }
+    </script>
+
+    <style>
+        .table th {
+            border-top: none;
+        }
+
+        .btn-group .btn {
+            margin-right: 2px;
+        }
+
+        .btn-group .btn:last-child {
+            margin-right: 0;
+        }
+    </style>
+</body>
+
+</html>

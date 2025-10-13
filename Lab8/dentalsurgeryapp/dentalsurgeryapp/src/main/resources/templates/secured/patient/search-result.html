@@ -116,7 +116,7 @@
                         <table class="table table-striped table-hover">
                             <thead class="table-primary">
                                 <tr>
-                                    <th>Patient #</th>
+                                    <th>ID</th>
                                     <th>Name</th>
                                     <th>Date of Birth</th>
                                     <th>Phone</th>
@@ -128,7 +128,7 @@
                             <tbody>
                                 <tr th:each="patient : ${searchResults}">
                                     <td>
-                                        <span class="badge bg-secondary" th:text="${patient.patientNumber}">P001</span>
+                                        <span class="badge bg-secondary" th:text="${patient.patientId}">1</span>
                                     </td>
                                     <td>
                                         <strong th:text="${patient.firstName + ' ' + patient.lastName}">John
@@ -137,12 +137,12 @@
                                         <small class="text-muted">ID: <span
                                                 th:text="${patient.patientId}">1</span></small>
                                     </td>
-                                    <td th:text="${patient.dateOfBirth}">1990-01-01</td>
+                                    <td th:text="${patient.dob}">1990-01-01</td>
                                     <td>
-                                        <span th:text="${patient.phone}">555-0123</span>
+                                        <span th:text="${patient.contactNumber}">555-0123</span>
                                         <br>
-                                        <small class="text-muted" th:if="${patient.phone != null}">
-                                            <a th:href="'tel:' + ${patient.phone}" class="text-decoration-none">
+                                        <small class="text-muted" th:if="${patient.contactNumber != null}">
+                                            <a th:href="'tel:' + ${patient.contactNumber}" class="text-decoration-none">
                                                 <i class="fas fa-phone"></i> Call
                                             </a>
                                         </small>

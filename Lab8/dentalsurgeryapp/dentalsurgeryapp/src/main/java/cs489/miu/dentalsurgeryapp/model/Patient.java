@@ -1,9 +1,13 @@
 package cs489.miu.dentalsurgeryapp.model;
 
 import java.time.LocalDate; 
+import org.springframework.format.annotation.DateTimeFormat;
  
 import jakarta.persistence.*;  
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
 import lombok.*;
 
 
@@ -35,10 +39,14 @@ public class Patient {
     private String email;
     
     @Column(name = "dob")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @NotNull(message = "Date of Birth is required.")
+    @Past(message = "Date of Birth must be in the past.")
     private LocalDate dob;
     
     @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "billing_address_id", nullable= true )// @JoinColumn(name = "address_id", nullable= true,unique=true )
+    @Valid
     private Address address;
 
 }

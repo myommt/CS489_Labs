@@ -27,52 +27,69 @@
                             <h5 class="mb-0"><i class="fas fa-user-plus"></i> Patient Information</h5>
                         </div>
                         <div class="card-body">
-                            <form th:action="@{/secured/patient/new}" th:object="${patient}" method="post">
+                            <form id="patientForm" th:action="@{/secured/patient/new}" th:object="${patient}"
+                                method="post" th:classappend="${#fields.hasErrors('*')} ? 'was-validated' : ''"
+                                novalidate>
+                                <!-- Server-side validation summary (needs th:object context) -->
+                                <div class="alert alert-danger d-flex align-items-center" role="alert"
+                                    th:if="${#fields.hasErrors('*')}">
+                                    <i class="fas fa-circle-exclamation me-2"></i>
+                                    <div>
+                                        Please fix the following errors:
+                                        <ul class="mb-0 mt-1">
+                                            <li th:each="err : ${#fields.errors('*')}" th:text="${err}">Error</li>
+                                        </ul>
+                                    </div>
+                                </div>
                                 <!-- Personal Information -->
                                 <div class="row mb-3">
                                     <div class="col-md-6">
                                         <label for="firstName" class="form-label">
-                                            <i class="fas fa-user"></i> First Name *
+                                            <i class="fas fa-user"></i> First Name <span class="required">*</span>
                                         </label>
                                         <input type="text" class="form-control" th:field="*{firstName}" id="firstName"
-                                            required>
-                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('firstName')}"
-                                            th:errors="*{firstName}">
-                                            First name is required
+                                            th:classappend="${#fields.hasErrors('firstName')} ? ' is-invalid' : ''"
+                                            aria-describedby="firstNameFeedback" required>
+                                        <div id="firstNameFeedback" class="invalid-feedback">
+                                            <span th:if="${#fields.hasErrors('firstName')}"
+                                                th:errors="*{firstName}">First name is required</span>
+                                            <span th:unless="${#fields.hasErrors('firstName')}">First name is
+                                                required</span>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <label for="lastName" class="form-label">
-                                            <i class="fas fa-user"></i> Last Name *
+                                            <i class="fas fa-user"></i> Last Name <span class="required">*</span>
                                         </label>
                                         <input type="text" class="form-control" th:field="*{lastName}" id="lastName"
-                                            required>
-                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('lastName')}"
-                                            th:errors="*{lastName}">
-                                            Last name is required
+                                            th:classappend="${#fields.hasErrors('lastName')} ? ' is-invalid' : ''"
+                                            aria-describedby="lastNameFeedback" required>
+                                        <div id="lastNameFeedback" class="invalid-feedback">
+                                            <span th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}">Last
+                                                name is required</span>
+                                            <span th:unless="${#fields.hasErrors('lastName')}">Last name is
+                                                required</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="row mb-3">
                                     <div class="col-md-6">
-                                        <label for="dateOfBirth" class="form-label">
-                                            <i class="fas fa-calendar"></i> Date of Birth *
+                                        <label for="dob" class="form-label">
+                                            <i class="fas fa-calendar"></i> Date of Birth <span
+                                                class="required">*</span>
                                         </label>
-                                        <input type="date" class="form-control" th:field="*{dateOfBirth}"
-                                            id="dateOfBirth" required>
-                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('dateOfBirth')}"
-                                            th:errors="*{dateOfBirth}">
-                                            Date of birth is required
+                                        <input type="date" class="form-control" th:field="*{dob}" id="dob"
+                                            th:classappend="${#fields.hasErrors('dob')} ? ' is-invalid' : ''"
+                                            aria-describedby="dobFeedback" required>
+                                        <div id="dobFeedback" class="invalid-feedback">
+                                            <span th:if="${#fields.hasErrors('dob')}" th:errors="*{dob}">Date of birth
+                                                is required</span>
+                                            <span th:unless="${#fields.hasErrors('dob')}">Date of birth is
+                                                required</span>
                                         </div>
                                     </div>
-                                    <div class="col-md-6">
-                                        <label for="patientNumber" class="form-label">
-                                            <i class="fas fa-id-card"></i> Patient Number
-                                        </label>
-                                        <input type="text" class="form-control" th:field="*{patientNumber}"
-                                            id="patientNumber" placeholder="Auto-generated if empty">
-                                    </div>
+                                    <div class="col-md-6"></div>
                                 </div>
 
                                 <!-- Contact Information -->
@@ -83,11 +100,11 @@
 
                                 <div class="row mb-3">
                                     <div class="col-md-6">
-                                        <label for="phone" class="form-label">
+                                        <label for="contactNumber" class="form-label">
                                             <i class="fas fa-phone"></i> Phone Number
                                         </label>
-                                        <input type="tel" class="form-control" th:field="*{phone}" id="phone"
-                                            placeholder="(xxx) xxx-xxxx">
+                                        <input type="tel" class="form-control" th:field="*{contactNumber}"
+                                            id="contactNumber" placeholder="(xxx) xxx-xxxx">
                                     </div>
                                     <div class="col-md-6">
                                         <label for="email" class="form-label">
@@ -106,33 +123,33 @@
 
                                 <div class="mb-3">
                                     <label for="addressStreet" class="form-label">
-                                        <i class="fas fa-road"></i> Street Address
+                                        <i class="fas fa-road"></i> Street Address <span class="required">*</span>
                                     </label>
                                     <input type="text" class="form-control" th:field="*{address.street}"
-                                        id="addressStreet" placeholder="123 Main Street">
+                                        id="addressStreet" placeholder="123 Main Street" required>
                                 </div>
 
                                 <div class="row mb-3">
                                     <div class="col-md-4">
                                         <label for="addressCity" class="form-label">
-                                            <i class="fas fa-city"></i> City
+                                            <i class="fas fa-city"></i> City <span class="required">*</span>
                                         </label>
                                         <input type="text" class="form-control" th:field="*{address.city}"
-                                            id="addressCity" placeholder="City">
+                                            id="addressCity" placeholder="City" required>
                                     </div>
                                     <div class="col-md-4">
                                         <label for="addressState" class="form-label">
-                                            <i class="fas fa-map"></i> State
+                                            <i class="fas fa-map"></i> State <span class="required">*</span>
                                         </label>
                                         <input type="text" class="form-control" th:field="*{address.state}"
-                                            id="addressState" placeholder="State">
+                                            id="addressState" placeholder="State" required>
                                     </div>
                                     <div class="col-md-4">
                                         <label for="addressZipcode" class="form-label">
-                                            <i class="fas fa-mail-bulk"></i> ZIP Code
+                                            <i class="fas fa-mail-bulk"></i> ZIP Code <span class="required">*</span>
                                         </label>
                                         <input type="text" class="form-control" th:field="*{address.zipcode}"
-                                            id="addressZipcode" placeholder="12345">
+                                            id="addressZipcode" placeholder="12345" required>
                                     </div>
                                 </div>
 
@@ -198,8 +215,8 @@
         function fillSampleData() {
             document.getElementById('firstName').value = 'John';
             document.getElementById('lastName').value = 'Doe';
-            document.getElementById('dateOfBirth').value = '1990-01-15';
-            document.getElementById('phone').value = '(555) 123-4567';
+            document.getElementById('dob').value = '1990-01-15';
+            document.getElementById('contactNumber').value = '(555) 123-4567';
             document.getElementById('email').value = 'john.doe@example.com';
             document.getElementById('addressStreet').value = '123 Main Street';
             document.getElementById('addressCity').value = 'Healthcare City';
@@ -210,16 +227,31 @@
 
         function validateForm() {
             const form = document.querySelector('form');
+            if (!form) return;
             if (form.checkValidity()) {
-                alert('Form is valid and ready to submit!');
+                // Optionally show a toast; avoid blocking alerts
+                console.log('Form is valid and ready to submit!');
             } else {
-                alert('Please fill in all required fields.');
+                form.classList.add('was-validated');
                 form.reportValidity();
             }
         }
 
+        // Add Bootstrap validation styling on submit
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('patientForm');
+            if (!form) return;
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+
         // Auto-format phone number
-        document.getElementById('phone').addEventListener('input', function (e) {
+        document.getElementById('contactNumber').addEventListener('input', function (e) {
             let value = e.target.value.replace(/\D/g, '');
             if (value.length >= 6) {
                 value = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');

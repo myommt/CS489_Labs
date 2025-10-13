@@ -12,8 +12,8 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h1 class="text-primary">
                     <i class="fas fa-user"></i> Patient Details
-                    <small class="text-muted" th:if="${patient != null}" th:text="'#' + ${patient.patientNumber}">
-                        #P001
+                    <small class="text-muted" th:if="${patient != null}" th:text="'ID: ' + ${patient.patientId}">
+                        ID: 1
                     </small>
                 </h1>
                 <div>
@@ -41,23 +41,17 @@
                                     <h6>Full Name</h6>
                                     <p class="lead" th:text="${patient.firstName + ' ' + patient.lastName}">John Doe</p>
                                 </div>
-                                <div class="col-md-6">
-                                    <h6>Patient Number</h6>
-                                    <p class="lead">
-                                        <span class="badge bg-secondary fs-6"
-                                            th:text="${patient.patientNumber}">P001</span>
-                                    </p>
-                                </div>
+                                <div class="col-md-6"></div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
                                     <h6>Date of Birth</h6>
-                                    <p th:text="${patient.dateOfBirth}">1990-01-01</p>
+                                    <p th:text="${patient.dob}">1990-01-01</p>
                                 </div>
                                 <div class="col-md-6">
                                     <h6>Age</h6>
                                     <p
-                                        th:text="${T(java.time.Period).between(patient.dateOfBirth, T(java.time.LocalDate).now()).years + ' years'}">
+                                        th:text="${patient.dob != null ? T(java.time.Period).between(patient.dob, T(java.time.LocalDate).now()).years + ' years' : 'N/A'}">
                                         30 years</p>
                                 </div>
                             </div>
@@ -75,11 +69,13 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <h6>Phone Number</h6>
-                                    <p th:if="${patient.phone != null and !patient.phone.empty}">
+                                    <p th:if="${patient.contactNumber != null and !patient.contactNumber.empty}">
                                         <i class="fas fa-phone text-primary"></i>
-                                        <a th:href="'tel:' + ${patient.phone}" th:text="${patient.phone}">555-0123</a>
+                                        <a th:href="'tel:' + ${patient.contactNumber}"
+                                            th:text="${patient.contactNumber}">555-0123</a>
                                     </p>
-                                    <p th:if="${patient.phone == null or patient.phone.empty}" class="text-muted">
+                                    <p th:if="${patient.contactNumber == null or patient.contactNumber.empty}"
+                                        class="text-muted">
                                         <i class="fas fa-phone text-muted"></i> Not provided
                                     </p>
                                 </div>

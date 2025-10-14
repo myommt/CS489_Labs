@@ -1,4 +1,4 @@
-package cs489.miu.dentalsurgeryapp.controller.sysadmin;
+    package cs489.miu.dentalsurgeryapp.controller.sysadmin;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +17,7 @@ import cs489.miu.dentalsurgeryapp.dto.DeleteResponseDTO;
 import cs489.miu.dentalsurgeryapp.model.Dentist;
 import cs489.miu.dentalsurgeryapp.service.DentistService;
 import jakarta.validation.Valid;
+import org.springframework.dao.DataIntegrityViolationException;
 
 /**
  * Unified Dentist Controller
@@ -39,7 +40,7 @@ public class DentistController {
         List<Dentist> dentists;
         try {
             dentists = dentistService.getAllDentistsOrderedByName();
-        } catch (Exception e) {
+        } catch (Exception ignored) {
             dentists = dentistService.getAllDentists();
         }
         model.addAttribute("dentists", dentists);
@@ -92,7 +93,7 @@ public class DentistController {
             return "secured/dentist/edit";
         }
         dentist.setDentistId(id);
-        Dentist updated = dentistService.saveDentist(dentist);
+        dentistService.saveDentist(dentist);
     redirectAttributes.addFlashAttribute("successMessage",
         "Dentist has been updated.");
         return "redirect:/secured/dentist/list";
@@ -119,9 +120,37 @@ public class DentistController {
             } else {
                 ra.addFlashAttribute("errorMessage", "Dentist not found with ID: " + id);
             }
-        } catch (Exception e) {
-            ra.addFlashAttribute("errorMessage", "Error deleting dentist: " + e.getMessage());
+        } catch (DataIntegrityViolationException ex) {
+            // Friendly message for FK constraint violations (e.g., existing appointments)
+            ra.addFlashAttribute(
+                "errorMessage",
+                "Cannot delete this dentist because they have existing appointments. " +
+                "Please delete or reassign those appointments first."
+            );
+        } catch (Exception ignored) {
+            // Generic fallback message (avoid exposing technical details)
+            ra.addFlashAttribute(
+                "errorMessage",
+                "Unable to delete the dentist at the moment. Please try again or contact support."
+            );
         }
+        return "redirect:/secured/dentist/list";
+    }
+
+    // Fallback endpoint if form posts without path variable (e.g., JS didn't set action)
+    @PostMapping("/secured/dentist/delete")
+    public String deleteDentistUiParam(@RequestParam(value = "id", required = false) Integer id, RedirectAttributes ra) {
+        if (id == null) {
+            ra.addFlashAttribute("errorMessage", "Missing dentist id for deletion.");
+            return "redirect:/secured/dentist/list";
+        }
+        return deleteDentistUi(id, ra);
+    }
+
+    // Guard direct GET access to /secured/dentist/delete
+    @GetMapping("/secured/dentist/delete")
+    public String deleteDentistGetGuard(RedirectAttributes ra) {
+        ra.addFlashAttribute("errorMessage", "Invalid request: no dentist selected for deletion.");
         return "redirect:/secured/dentist/list";
     }
 
@@ -132,8 +161,8 @@ public class DentistController {
     public ResponseEntity<List<DentistResponseDTO>> getAllDentistsApi() {
         List<Dentist> dentists = dentistService.getAllDentists();
         List<DentistResponseDTO> dentistDTOs = dentists.stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
+        .map(this::mapToDTO)
+        .toList();
         return ResponseEntity.ok(dentistDTOs);
     }
 
@@ -171,13 +200,27 @@ public class DentistController {
     @ResponseBody
     @DeleteMapping("/dentalsugery/api/dentists/{id}")
     public ResponseEntity<DeleteResponseDTO> deleteDentistApi(@PathVariable Integer id) {
-        boolean deleted = dentistService.deleteDentistById(id);
-        if (deleted) {
-            DeleteResponseDTO response = new DeleteResponseDTO(true, "Dentist with ID " + id + " has been successfully deleted.");
-            return ResponseEntity.ok(response);
-        } else {
-            DeleteResponseDTO response = new DeleteResponseDTO(false, "Dentist with ID " + id + " not found.");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        try {
+            boolean deleted = dentistService.deleteDentistById(id);
+            if (deleted) {
+                DeleteResponseDTO response = new DeleteResponseDTO(true, "Dentist with ID " + id + " has been successfully deleted.");
+                return ResponseEntity.ok(response);
+            } else {
+                DeleteResponseDTO response = new DeleteResponseDTO(false, "Dentist with ID " + id + " not found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+        } catch (DataIntegrityViolationException ex) {
+            DeleteResponseDTO response = new DeleteResponseDTO(
+                false,
+                "Cannot delete this dentist because they have existing appointments. Please delete or reassign those appointments first."
+            );
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        } catch (Exception ignored) {
+            DeleteResponseDTO response = new DeleteResponseDTO(
+                false,
+                "Unable to delete the dentist at the moment. Please try again or contact support."
+            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 

@@ -16,6 +16,7 @@ import java.util.List;
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private Integer userId;
     
     @Column(nullable=false)
@@ -49,8 +50,8 @@ public class User implements UserDetails {
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(
             name = "users_roles",
-            joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "userId")},
-            inverseJoinColumns = {@JoinColumn(name = "role_id", referencedColumnName = "roleId")}
+            joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "user_id")},
+            inverseJoinColumns = {@JoinColumn(name = "role_id", referencedColumnName = "role_id")}
     )
     private List<Role> roles;
 
@@ -137,7 +138,9 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        String[] userRoles = getRoles().stream().map((role) -> role.getName()).toArray(String[]::new);
+        String[] userRoles = getRoles().stream()
+                .map((role) -> "ROLE_" + role.getName())
+                .toArray(String[]::new);
         Collection<GrantedAuthority> authorities = AuthorityUtils.createAuthorityList(userRoles);
         return authorities;
     }

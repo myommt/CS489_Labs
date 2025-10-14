@@ -21,7 +21,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Optional;
 
-@Controller
+@Controller("dentistRolebaseController")
 @RequestMapping("/dentalsurgeryapp/rolebase/dentist")
 @PreAuthorize("hasAuthority('DENTIST')")
 public class DentistController {

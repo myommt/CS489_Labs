@@ -12,6 +12,7 @@ public interface UserService {
     Optional<User> getUserByEmail(String email);
     User saveUser(User user);
     User updateUser(User user);
+    User updateUserProfile(Integer userId, String firstName, String lastName, String username, String email, boolean enabled, List<String> roleNames);
     void deleteUser(Integer id);
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);

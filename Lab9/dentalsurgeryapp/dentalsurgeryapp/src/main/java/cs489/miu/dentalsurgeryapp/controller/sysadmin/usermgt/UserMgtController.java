@@ -1,5 +1,7 @@
 package cs489.miu.dentalsurgeryapp.controller.sysadmin.usermgt;
 
+import cs489.miu.dentalsurgeryapp.dto.request.UserUpdateRequestDTO;
+import cs489.miu.dentalsurgeryapp.model.Role;
 import cs489.miu.dentalsurgeryapp.model.User;
 import cs489.miu.dentalsurgeryapp.service.RoleService;
 import cs489.miu.dentalsurgeryapp.service.UserService;
@@ -15,7 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 @Controller
-@PreAuthorize("hasAuthority('ADMIN')")
+@PreAuthorize("hasAuthority('ROLE_SYSADMIN')")
 public class UserMgtController {
     
     // Constants
@@ -88,9 +90,23 @@ public class UserMgtController {
         var userOptional = userService.getUserById(userId);
         if (userOptional.isPresent()) {
             User user = userOptional.get();
-            // Clear password for security - user will need to enter new password if changing
-            user.setPassword("");
-            model.addAttribute("user", user);
+            
+            // Convert User to UserUpdateRequestDTO
+            UserUpdateRequestDTO userUpdateDTO = new UserUpdateRequestDTO();
+            userUpdateDTO.setUserId(user.getUserId());
+            userUpdateDTO.setFirstName(user.getFirstName());
+            userUpdateDTO.setLastName(user.getLastName());
+            userUpdateDTO.setUsername(user.getUsername());
+            userUpdateDTO.setEmail(user.getEmail());
+            userUpdateDTO.setEnabled(user.isEnabled());
+            
+            // Convert roles to role names
+            var roleNames = user.getRoles().stream()
+                .map(Role::getName)
+                .toList();
+            userUpdateDTO.setRoleNames(roleNames);
+            
+            model.addAttribute("user", userUpdateDTO);
             model.addAttribute(ROLES_ATTRIBUTE, roleService.getAllRoles());
             return EDIT_USER_VIEW;
         }
@@ -98,7 +114,7 @@ public class UserMgtController {
     }
 
     @PostMapping("/dentalsurgeryapp/secured/sysadmin/usermgt/user/edit")
-    public String updateUser(@Valid @ModelAttribute("user") User user,
+    public String updateUser(@Valid @ModelAttribute("user") UserUpdateRequestDTO userUpdateDTO,
                              Model model, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("errors", bindingResult.getAllErrors());
@@ -107,23 +123,34 @@ public class UserMgtController {
         }
         
         // Check for duplicate username or email (excluding current user)
-        var existingUserByUsername = userService.getUserByUsername(user.getUsername());
+        var existingUserByUsername = userService.getUserByUsername(userUpdateDTO.getUsername());
         if (existingUserByUsername.isPresent() && 
-            !existingUserByUsername.get().getUserId().equals(user.getUserId())) {
+            !existingUserByUsername.get().getUserId().equals(userUpdateDTO.getUserId())) {
             model.addAttribute("usernameError", "Username already exists");
             model.addAttribute(ROLES_ATTRIBUTE, roleService.getAllRoles());
             return EDIT_USER_VIEW;
         }
         
-        var existingUserByEmail = userService.getUserByEmail(user.getEmail());
+        var existingUserByEmail = userService.getUserByEmail(userUpdateDTO.getEmail());
         if (existingUserByEmail.isPresent() && 
-            !existingUserByEmail.get().getUserId().equals(user.getUserId())) {
+            !existingUserByEmail.get().getUserId().equals(userUpdateDTO.getUserId())) {
             model.addAttribute("emailError", "Email already exists");
             model.addAttribute(ROLES_ATTRIBUTE, roleService.getAllRoles());
             return EDIT_USER_VIEW;
         }
         
-        userService.updateUser(user);
+        // Get the existing user and update only the allowed fields
+        // Use the new updateUserProfile method that doesn't touch the password
+        userService.updateUserProfile(
+            userUpdateDTO.getUserId(),
+            userUpdateDTO.getFirstName(),
+            userUpdateDTO.getLastName(),
+            userUpdateDTO.getUsername(),
+            userUpdateDTO.getEmail(),
+            Boolean.TRUE.equals(userUpdateDTO.getEnabled()),
+            userUpdateDTO.getRoleNames()
+        );
+        
         return REDIRECT_USER_LIST;
     }
 

@@ -3,6 +3,7 @@ package cs489.miu.dentalsurgeryapp.model;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
+import org.springframework.format.annotation.DateTimeFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -31,6 +32,7 @@ public class Appointment {
 
     @Column(name = "appointmentDateTime", nullable = false)
     @NotNull(message = "Appointment date and time is required.")
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime appointmentDateTime;
 
     // Many appointments can be for one patient

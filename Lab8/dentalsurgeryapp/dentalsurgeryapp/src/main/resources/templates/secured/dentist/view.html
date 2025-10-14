@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head-elements :: headElements}">
+    <title th:text="${pageTitle != null ? pageTitle : 'Dentist Details'}">Dentist Details</title>
+    <meta charset="UTF-8" />
+</head>
+
+<body>
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="container mt-4">
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <h2>Dentist Details</h2>
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5 class="card-title" th:text="${dentist.firstName + ' ' + dentist.lastName}">Dentist Name</h5>
+                <p class="card-text mb-1">
+                    <strong>Email:</strong>
+                    <span th:text="${dentist.email}">email@example.com</span>
+                </p>
+                <p class="card-text mb-1">
+                    <strong>Contact:</strong>
+                    <span th:text="${dentist.contactNumber}">123-456-7890</span>
+                </p>
+                <p class="card-text mb-1">
+                    <strong>Specialization:</strong>
+                    <span th:text="${dentist.specialization}">General</span>
+                </p>
+            </div>
+            <div class="card-footer d-flex gap-2">
+                <a class="btn btn-secondary" th:href="@{/secured/dentist/list}">Back to List</a>
+                <a class="btn btn-primary" th:href="@{'/secured/dentist/edit/' + ${dentist.dentistId}}">Edit</a>
+                <form th:action="@{'/secured/dentist/delete/' + ${dentist.dentistId}}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+</body>
+
+</html>

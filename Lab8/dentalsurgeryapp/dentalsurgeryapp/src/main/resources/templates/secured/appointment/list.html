@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head-elements :: headElements}">
+    <title th:text="${pageTitle != null ? pageTitle : 'Appointments'}">Appointments</title>
+    <meta charset="UTF-8" />
+</head>
+
+<body>
+    <div th:replace="fragments/header :: header"></div>
+
+    <div class="container mt-4">
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Appointments</h2>
+            <a class="btn btn-primary" th:href="@{/secured/appointment/new}"><i class="fa fa-plus"></i> New
+                Appointment</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Date/Time</th>
+                        <th>Patient</th>
+                        <th>Dentist</th>
+                        <th>Location</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="appt : ${appointments}">
+                        <td th:text="${appt.appointmentId}">1</td>
+                        <td th:text="${appt.appointmentType}">Checkup</td>
+                        <td th:text="${appt.appointmentStatus}">Scheduled</td>
+                        <td th:text="${#temporals.format(appt.appointmentDateTime, 'yyyy-MM-dd HH:mm')}">2025-01-01
+                            09:00</td>
+                        <td
+                            th:text="${appt.patient != null ? appt.patient.firstName + ' ' + appt.patient.lastName : ''}">
+                            John Doe</td>
+                        <td
+                            th:text="${appt.dentist != null ? appt.dentist.firstName + ' ' + appt.dentist.lastName : ''}">
+                            Dr. Smith</td>
+                        <td th:text="${appt.surgeryLocation != null ? appt.surgeryLocation.name : ''}">Room 1</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-secondary"
+                                th:href="@{'/secured/appointment/view/' + ${appt.appointmentId}}">View</a>
+                            <a class="btn btn-sm btn-outline-primary"
+                                th:href="@{'/secured/appointment/edit/' + ${appt.appointmentId}}">Edit</a>
+                            <form th:action="@{'/secured/appointment/delete/' + ${appt.appointmentId}}" method="post"
+                                class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div th:replace="fragments/footer :: footer"></div>
+</body>
+
+</html>

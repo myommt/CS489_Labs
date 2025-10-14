@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://thymeleaf.org">
+
+<head th:replace="~{fragments/head-elements :: headElements}">
+    <title>Dental Surgery - Location Details</title>
+    <meta charset="UTF-8" />
+</head>
+
+<body>
+    <div id="page-content">
+        <header th:replace="~{fragments/header :: header}"></header>
+        <main class="container mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1 class="text-secondary"><i class="fas fa-hospital"></i> Location Details</h1>
+                <div class="btn-group">
+                    <a th:href="@{/secured/location/edit/{id}(id=${location.surgeryLocationId})}"
+                        class="btn btn-primary"><i class="fas fa-edit"></i> Edit</a>
+                    <a href="/secured/location/list" class="btn btn-secondary"><i class="fas fa-arrow-left"></i>
+                        Back</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-3">Name</dt>
+                        <dd class="col-sm-9" th:text="${location.name}">Downtown Clinic</dd>
+                        <dt class="col-sm-3">Contact</dt>
+                        <dd class="col-sm-9"><a th:href="${'tel:' + location.contactNumber}"
+                                th:text="${location.contactNumber}">(641) 555-1234</a></dd>
+                        <dt class="col-sm-3">Address</dt>
+                        <dd class="col-sm-9">
+                            <span th:if="${location.location != null}"
+                                th:text="${location.location.street + ', ' + location.location.city + ', ' + location.location.state + ' ' + location.location.zipcode}">123
+                                Main St, Fairfield, IA 52557</span>
+                            <span th:if="${location.location == null}" class="text-muted">No address on file</span>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </main>
+        <footer th:replace="~{fragments/footer :: footer}"></footer>
+    </div>
+</body>
+
+</html>

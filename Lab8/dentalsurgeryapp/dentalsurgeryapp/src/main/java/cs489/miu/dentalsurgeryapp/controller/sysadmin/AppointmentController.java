@@ -1,10 +1,15 @@
 package cs489.miu.dentalsurgeryapp.controller.sysadmin;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import cs489.miu.dentalsurgeryapp.dto.*;
 import cs489.miu.dentalsurgeryapp.model.*;
@@ -12,8 +17,7 @@ import cs489.miu.dentalsurgeryapp.service.*;
 import cs489.miu.dentalsurgeryapp.exception.AppointmentLimitExceededException;
 import cs489.miu.dentalsurgeryapp.exception.OutstandingBillException;
 
-@RestController
-@RequestMapping(value = "/dentalsugery/api/appointments")
+@Controller("appointmentController")
 public class AppointmentController {
 
     private final AppointmentService appointmentService;
@@ -34,7 +38,144 @@ public class AppointmentController {
         this.addressService = addressService;
     }
 
-    @GetMapping
+    // ===================== MVC (Thymeleaf) endpoints =====================
+    @GetMapping({"/secured/appointment/", "/secured/appointment/list"})
+    public String listAppointments(Model model) {
+        List<Appointment> appointments = appointmentService.getAllAppointments();
+        model.addAttribute("appointments", appointments);
+        model.addAttribute("pageTitle", "Appointment List");
+        return "secured/appointment/list";
+    }
+
+    @GetMapping("/secured/appointment/new")
+    public String showNewAppointmentForm(Model model) {
+        model.addAttribute("appointment", new Appointment());
+        populateReferenceData(model);
+        model.addAttribute("pageTitle", "Add New Appointment");
+        return "secured/appointment/new";
+    }
+
+    @PostMapping("/secured/appointment/new")
+    public String createAppointment(@ModelAttribute("appointment") Appointment appointment,
+                                    @RequestParam Integer patientId,
+                                    @RequestParam Integer dentistId,
+                                    @RequestParam Integer surgeryLocationId,
+                                    BindingResult bindingResult,
+                                    Model model,
+                                    RedirectAttributes ra) {
+        if (bindingResult.hasErrors()) {
+            populateReferenceData(model);
+            model.addAttribute("pageTitle", "Add New Appointment");
+            return "secured/appointment/new";
+        }
+        try {
+            // Attach associations
+            appointment.setPatient(patientService.getPatientById(patientId));
+            appointment.setDentist(dentistService.findDentistById(dentistId).orElseThrow());
+            appointment.setSurgeryLocation(surgeryLocationService.findSurgeryLocationById(surgeryLocationId).orElseThrow());
+
+            Appointment created = appointmentService.addNewAppointment(appointment);
+            ra.addFlashAttribute("successMessage", "Appointment #" + created.getAppointmentId() + " created successfully.");
+            return "redirect:/secured/appointment/list";
+        } catch (OutstandingBillException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+        } catch (AppointmentLimitExceededException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "Error creating appointment: " + e.getMessage());
+        }
+        populateReferenceData(model);
+        model.addAttribute("pageTitle", "Add New Appointment");
+        return "secured/appointment/new";
+    }
+
+    @GetMapping("/secured/appointment/edit/{id}")
+    public String showEditAppointmentForm(@PathVariable Integer id, Model model, RedirectAttributes ra) {
+        Appointment appt = appointmentService.getAppointmentById(id);
+        if (appt == null) {
+            ra.addFlashAttribute("errorMessage", "Appointment not found with ID: " + id);
+            return "redirect:/secured/appointment/list";
+        }
+        model.addAttribute("appointment", appt);
+        populateReferenceData(model);
+        model.addAttribute("pageTitle", "Edit Appointment");
+        return "secured/appointment/edit";
+    }
+
+    @PostMapping("/secured/appointment/edit/{id}")
+    public String updateAppointment(@PathVariable Integer id,
+                                    @ModelAttribute("appointment") Appointment appointment,
+                                    @RequestParam Integer patientId,
+                                    @RequestParam Integer dentistId,
+                                    @RequestParam Integer surgeryLocationId,
+                                    BindingResult bindingResult,
+                                    Model model,
+                                    RedirectAttributes ra) {
+        if (bindingResult.hasErrors()) {
+            populateReferenceData(model);
+            model.addAttribute("pageTitle", "Edit Appointment");
+            return "secured/appointment/edit";
+        }
+        try {
+            appointment.setAppointmentId(id);
+            appointment.setPatient(patientService.getPatientById(patientId));
+            appointment.setDentist(dentistService.findDentistById(dentistId).orElseThrow());
+            appointment.setSurgeryLocation(surgeryLocationService.findSurgeryLocationById(surgeryLocationId).orElseThrow());
+            Appointment updated = appointmentService.updateAppointment(appointment);
+            ra.addFlashAttribute("successMessage", "Appointment #" + updated.getAppointmentId() + " updated successfully.");
+            return "redirect:/secured/appointment/list";
+        } catch (OutstandingBillException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+        } catch (AppointmentLimitExceededException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "Error updating appointment: " + e.getMessage());
+        }
+        populateReferenceData(model);
+        model.addAttribute("pageTitle", "Edit Appointment");
+        return "secured/appointment/edit";
+    }
+
+    @GetMapping("/secured/appointment/view/{id}")
+    public String viewAppointment(@PathVariable Integer id, Model model, RedirectAttributes ra) {
+        Appointment appt = appointmentService.getAppointmentById(id);
+        if (appt == null) {
+            ra.addFlashAttribute("errorMessage", "Appointment not found with ID: " + id);
+            return "redirect:/secured/appointment/list";
+        }
+        model.addAttribute("appointment", appt);
+        model.addAttribute("pageTitle", "Appointment Details");
+        return "secured/appointment/view";
+    }
+
+    @PostMapping("/secured/appointment/delete/{id}")
+    public String deleteAppointmentUi(@PathVariable Integer id, RedirectAttributes ra) {
+        try {
+            boolean deleted = appointmentService.deleteAppointmentById(id);
+            if (deleted) {
+                ra.addFlashAttribute("successMessage", "Appointment deleted successfully.");
+            } else {
+                ra.addFlashAttribute("errorMessage", "Appointment not found with ID: " + id);
+            }
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", "Error deleting appointment: " + e.getMessage());
+        }
+        return "redirect:/secured/appointment/list";
+    }
+
+    private void populateReferenceData(Model model) {
+        model.addAttribute("patients", patientService.getAllPatients());
+        // Prefer ordered lists for better UX
+        model.addAttribute("dentists", dentistService.getAllDentistsOrderedByName());
+        model.addAttribute("surgeryLocations", surgeryLocationService.getAllSurgeryLocationsOrderedByName());
+        // Back-compat aliases and static lists (if templates use them)
+        model.addAttribute("locations", surgeryLocationService.getAllSurgeryLocationsOrderedByName());
+        model.addAttribute("statuses", java.util.List.of("SCHEDULED", "COMPLETED", "CANCELLED"));
+        model.addAttribute("types", java.util.List.of("CHECKUP", "CLEANING", "FILLING", "SURGERY"));
+    }
+
+    @ResponseBody
+    @GetMapping("/dentalsugery/api/appointments")
     public ResponseEntity<List<AppointmentResponseDTO>> getAllAppointments() {
         List<Appointment> appointments = appointmentService.getAllAppointments();
         List<AppointmentResponseDTO> appointmentDTOs = appointments.stream()
@@ -43,7 +184,8 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentDTOs);
     }
 
-    @GetMapping("/{id}")
+    @ResponseBody
+    @GetMapping("/dentalsugery/api/appointments/{id}")
     public ResponseEntity<AppointmentResponseDTO> getAppointmentById(@PathVariable Integer id) {
         Appointment appointment = appointmentService.getAppointmentById(id);
         if (appointment != null) {
@@ -52,8 +194,9 @@ public class AppointmentController {
         return ResponseEntity.notFound().build();
     }
 
-    @PostMapping
-    public ResponseEntity<?> createAppointment(@RequestBody AppointmentRequestDTO appointmentRequestDTO) {
+    @ResponseBody
+    @PostMapping("/dentalsugery/api/appointments")
+    public ResponseEntity<Object> createAppointment(@RequestBody AppointmentRequestDTO appointmentRequestDTO) {
         try {
             Appointment appointment = mapToEntity(appointmentRequestDTO);
             Appointment createdAppointment = appointmentService.addNewAppointment(appointment);
@@ -70,8 +213,9 @@ public class AppointmentController {
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateAppointment(@PathVariable Integer id, @RequestBody AppointmentRequestDTO appointmentRequestDTO) {
+    @ResponseBody
+    @PutMapping("/dentalsugery/api/appointments/{id}")
+    public ResponseEntity<Object> updateAppointment(@PathVariable Integer id, @RequestBody AppointmentRequestDTO appointmentRequestDTO) {
         try {
             // Verify the appointment exists first
             appointmentService.getAppointmentById(id);
@@ -92,7 +236,8 @@ public class AppointmentController {
         }
     }
 
-    @DeleteMapping("/{id}")
+    @ResponseBody
+    @DeleteMapping("/dentalsugery/api/appointments/{id}")
     public ResponseEntity<DeleteResponseDTO> deleteAppointment(@PathVariable Integer id) {
         boolean deleted = appointmentService.deleteAppointmentById(id);
         if (deleted) {

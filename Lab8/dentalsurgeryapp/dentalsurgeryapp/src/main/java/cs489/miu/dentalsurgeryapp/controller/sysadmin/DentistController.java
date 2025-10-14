@@ -6,15 +6,24 @@ import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import cs489.miu.dentalsurgeryapp.dto.DentistResponseDTO;
 import cs489.miu.dentalsurgeryapp.dto.DeleteResponseDTO;
 import cs489.miu.dentalsurgeryapp.model.Dentist;
 import cs489.miu.dentalsurgeryapp.service.DentistService;
+import jakarta.validation.Valid;
 
-@RestController
-@RequestMapping(value = "/dentalsugery/api/dentists")
+/**
+ * Unified Dentist Controller
+ * - Serves MVC pages under /secured/dentist
+ * - Exposes REST API under /dentalsugery/api/dentists
+ */
+@Controller("dentistController")
 public class DentistController {
 
     private final DentistService dentistService;
@@ -23,8 +32,104 @@ public class DentistController {
         this.dentistService = dentistService;
     }
 
-    @GetMapping
-    public ResponseEntity<List<DentistResponseDTO>> getAllDentists() {
+    // ===================== MVC (Thymeleaf) endpoints =====================
+
+    @GetMapping({"/secured/dentist/", "/secured/dentist/list"})
+    public String listDentists(Model model) {
+        List<Dentist> dentists;
+        try {
+            dentists = dentistService.getAllDentistsOrderedByName();
+        } catch (Exception e) {
+            dentists = dentistService.getAllDentists();
+        }
+        model.addAttribute("dentists", dentists);
+        model.addAttribute("pageTitle", "Dentist List");
+        return "secured/dentist/list";
+    }
+
+    @GetMapping("/secured/dentist/new")
+    public String showNewDentistForm(Model model) {
+        model.addAttribute("dentist", new Dentist());
+        model.addAttribute("pageTitle", "Add New Dentist");
+        return "secured/dentist/new";
+    }
+
+    @PostMapping("/secured/dentist/new")
+    public String createDentist(@Valid @ModelAttribute("dentist") Dentist dentist,
+                                BindingResult bindingResult,
+                                Model model,
+                                RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("pageTitle", "Add New Dentist");
+            return "secured/dentist/new";
+        }
+        Dentist saved = dentistService.saveDentist(dentist);
+    redirectAttributes.addFlashAttribute("successMessage",
+        "Dentist " + saved.getFirstName() + " " + saved.getLastName() + " has been added.");
+        return "redirect:/secured/dentist/list";
+    }
+
+    @GetMapping("/secured/dentist/edit/{id}")
+    public String showEditDentistForm(@PathVariable Integer id, Model model, RedirectAttributes ra) {
+        Optional<Dentist> dentist = dentistService.findDentistById(id);
+        if (dentist.isEmpty()) {
+            ra.addFlashAttribute("errorMessage", "Dentist not found with ID: " + id);
+            return "redirect:/secured/dentist/list";
+        }
+        model.addAttribute("dentist", dentist.get());
+        model.addAttribute("pageTitle", "Edit Dentist");
+        return "secured/dentist/edit";
+    }
+
+    @PostMapping("/secured/dentist/edit/{id}")
+    public String updateDentist(@PathVariable Integer id,
+                                @Valid @ModelAttribute("dentist") Dentist dentist,
+                                BindingResult bindingResult,
+                                Model model,
+                                RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("pageTitle", "Edit Dentist");
+            return "secured/dentist/edit";
+        }
+        dentist.setDentistId(id);
+        Dentist updated = dentistService.saveDentist(dentist);
+    redirectAttributes.addFlashAttribute("successMessage",
+        "Dentist has been updated.");
+        return "redirect:/secured/dentist/list";
+    }
+
+    @GetMapping("/secured/dentist/view/{id}")
+    public String viewDentist(@PathVariable Integer id, Model model, RedirectAttributes ra) {
+        Optional<Dentist> dentist = dentistService.findDentistById(id);
+        if (dentist.isEmpty()) {
+            ra.addFlashAttribute("errorMessage", "Dentist not found with ID: " + id);
+            return "redirect:/secured/dentist/list";
+        }
+        model.addAttribute("dentist", dentist.get());
+        model.addAttribute("pageTitle", "Dentist Details");
+        return "secured/dentist/view";
+    }
+
+    @PostMapping("/secured/dentist/delete/{id}")
+    public String deleteDentistUi(@PathVariable Integer id, RedirectAttributes ra) {
+        try {
+            boolean deleted = dentistService.deleteDentistById(id);
+            if (deleted) {
+                ra.addFlashAttribute("successMessage", "Dentist deleted.");
+            } else {
+                ra.addFlashAttribute("errorMessage", "Dentist not found with ID: " + id);
+            }
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", "Error deleting dentist: " + e.getMessage());
+        }
+        return "redirect:/secured/dentist/list";
+    }
+
+    // ===================== REST API endpoints =====================
+
+    @ResponseBody
+    @GetMapping("/dentalsugery/api/dentists")
+    public ResponseEntity<List<DentistResponseDTO>> getAllDentistsApi() {
         List<Dentist> dentists = dentistService.getAllDentists();
         List<DentistResponseDTO> dentistDTOs = dentists.stream()
                 .map(this::mapToDTO)
@@ -32,35 +137,40 @@ public class DentistController {
         return ResponseEntity.ok(dentistDTOs);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<DentistResponseDTO> getDentistById(@PathVariable Integer id) {
+    @ResponseBody
+    @GetMapping("/dentalsugery/api/dentists/{id}")
+    public ResponseEntity<DentistResponseDTO> getDentistByIdApi(@PathVariable Integer id) {
         Optional<Dentist> dentist = dentistService.findDentistById(id);
         return dentist.map(d -> ResponseEntity.ok(mapToDTO(d)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/email/{email}")
-    public ResponseEntity<DentistResponseDTO> getDentistByEmail(@PathVariable String email) {
+    @ResponseBody
+    @GetMapping("/dentalsugery/api/dentists/email/{email}")
+    public ResponseEntity<DentistResponseDTO> getDentistByEmailApi(@PathVariable String email) {
         Optional<Dentist> dentist = dentistService.findDentistByEmail(email);
         return dentist.map(d -> ResponseEntity.ok(mapToDTO(d)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
-    public ResponseEntity<DentistResponseDTO> createDentist(@RequestBody Dentist dentist) {
+    @ResponseBody
+    @PostMapping("/dentalsugery/api/dentists")
+    public ResponseEntity<DentistResponseDTO> createDentistApi(@RequestBody Dentist dentist) {
         Dentist createdDentist = dentistService.saveDentist(dentist);
         return ResponseEntity.status(HttpStatus.CREATED).body(mapToDTO(createdDentist));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<DentistResponseDTO> updateDentist(@PathVariable Integer id, @RequestBody Dentist dentist) {
+    @ResponseBody
+    @PutMapping("/dentalsugery/api/dentists/{id}")
+    public ResponseEntity<DentistResponseDTO> updateDentistApi(@PathVariable Integer id, @RequestBody Dentist dentist) {
         dentist.setDentistId(id);
         Dentist updatedDentist = dentistService.saveDentist(dentist);
         return ResponseEntity.ok(mapToDTO(updatedDentist));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<DeleteResponseDTO> deleteDentist(@PathVariable Integer id) {
+    @ResponseBody
+    @DeleteMapping("/dentalsugery/api/dentists/{id}")
+    public ResponseEntity<DeleteResponseDTO> deleteDentistApi(@PathVariable Integer id) {
         boolean deleted = dentistService.deleteDentistById(id);
         if (deleted) {
             DeleteResponseDTO response = new DeleteResponseDTO(true, "Dentist with ID " + id + " has been successfully deleted.");

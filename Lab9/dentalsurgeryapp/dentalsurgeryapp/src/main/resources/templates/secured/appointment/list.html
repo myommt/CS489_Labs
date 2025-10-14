@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head-elements :: headElements}">
+    <title th:text="${pageTitle != null ? pageTitle : 'Appointments'}">Appointments</title>
+    <meta charset="UTF-8" />
+</head>
+
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="container mt-4">
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Appointments</h2>
+            <a class="btn btn-primary" th:href="@{/secured/appointment/new}"><i class="fa fa-plus"></i> New
+                Appointment</a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Date/Time</th>
+                        <th>Patient</th>
+                        <th>Dentist</th>
+                        <th>Location</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="appt : ${appointments}">
+                        <td th:text="${appt.appointmentId}">1</td>
+                        <td th:text="${appt.appointmentType}">Checkup</td>
+                        <td th:text="${appt.appointmentStatus}">Scheduled</td>
+                        <td th:text="${#temporals.format(appt.appointmentDateTime, 'yyyy-MM-dd HH:mm')}">2025-01-01
+                            09:00</td>
+                        <td
+                            th:text="${appt.patient != null ? appt.patient.firstName + ' ' + appt.patient.lastName : ''}">
+                            John Doe</td>
+                        <td
+                            th:text="${appt.dentist != null ? appt.dentist.firstName + ' ' + appt.dentist.lastName : ''}">
+                            Dr. Smith</td>
+                        <td th:text="${appt.surgeryLocation != null ? appt.surgeryLocation.name : ''}">Room 1</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-secondary"
+                                th:href="@{'/secured/appointment/view/' + ${appt.appointmentId}}">View</a>
+                            <a class="btn btn-sm btn-outline-primary"
+                                th:href="@{'/secured/appointment/edit/' + ${appt.appointmentId}}">Edit</a>
+                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                                data-bs-target="#deleteAppointmentModal"
+                                th:attr="data-entity-id=${appt.appointmentId},
+                                         data-entity-name=${(appt.patient != null ? appt.patient.firstName + ' ' + appt.patient.lastName : 'Appointment')}">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteAppointmentModal" tabindex="-1" aria-labelledby="deleteAppointmentModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteAppointmentModalLabel">Confirm Delete</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">Are you sure you want to delete appointment for <strong
+                            id="deleteApptEntityName">this record</strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form id="deleteApptForm" method="post">
+                        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}"
+                            th:value="${_csrf.token}" />
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script th:inline="javascript">
+        (function () {
+            var modal = document.getElementById('deleteAppointmentModal');
+            if (!modal) return;
+            modal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                if (!button) return;
+                var id = button.getAttribute('data-entity-id');
+                var name = button.getAttribute('data-entity-name') || 'this appointment';
+                var form = document.getElementById('deleteApptForm');
+                var nameEl = document.getElementById('deleteApptEntityName');
+                if (nameEl) nameEl.textContent = name;
+                if (form && id) {
+                    var target = '/secured/appointment/delete/' + id;
+                    form.setAttribute('action', window.location.origin + target);
+                }
+            });
+            var form = document.getElementById('deleteApptForm');
+            if (form) {
+                form.addEventListener('submit', function (e) {
+                    var action = form.getAttribute('action');
+                    if (!action || !/\/secured\/appointment\/delete\/\d+$/.test(action)) {
+                        e.preventDefault();
+                    }
+                });
+            }
+        })();
+    </script>
+</body>
+
+</html>

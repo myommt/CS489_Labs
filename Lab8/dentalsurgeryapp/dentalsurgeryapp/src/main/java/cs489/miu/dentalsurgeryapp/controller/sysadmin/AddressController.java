@@ -106,6 +106,22 @@ public class AddressController {
         return "secured/address/view";
     }
 
+    /** Delete address (from UI) */
+    @PostMapping("/secured/address/delete/{id}")
+    public String deleteAddressUi(@PathVariable Integer id, RedirectAttributes ra) {
+        try {
+            boolean deleted = addressService.deleteAddressById(id);
+            if (deleted) {
+                ra.addFlashAttribute("successMessage", "Address has been successfully deleted.");
+            } else {
+                ra.addFlashAttribute("errorMessage", "Address not found with ID: " + id);
+            }
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", "Error deleting address: " + e.getMessage());
+        }
+        return "redirect:/secured/address/list";
+    }
+
     // ===================== REST API endpoints =====================
 
     @ResponseBody

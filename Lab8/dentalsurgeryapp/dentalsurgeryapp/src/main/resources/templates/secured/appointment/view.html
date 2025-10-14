@@ -7,7 +7,7 @@
 </head>
 
 <body>
-    <div th:replace="fragments/header :: header"></div>
+    <div th:replace="~{fragments/header :: header}"></div>
 
     <div class="container mt-4">
         <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
@@ -37,15 +37,73 @@
                 <a class="btn btn-secondary" th:href="@{/secured/appointment/list}">Back to List</a>
                 <a class="btn btn-primary"
                     th:href="@{'/secured/appointment/edit/' + ${appointment.appointmentId}}">Edit</a>
-                <form th:action="@{'/secured/appointment/delete/' + ${appointment.appointmentId}}" method="post"
-                    class="d-inline">
-                    <button type="submit" class="btn btn-danger">Delete</button>
-                </form>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+                    data-bs-target="#deleteAppointmentModal"
+                    th:attr="data-entity-id=${appointment.appointmentId},
+                             data-entity-name=${(appointment.patient != null ? appointment.patient.firstName + ' ' + appointment.patient.lastName : 'this appointment')}">
+                    Delete
+                </button>
             </div>
         </div>
     </div>
 
-    <div th:replace="fragments/footer :: footer"></div>
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteAppointmentModal" tabindex="-1" aria-labelledby="deleteAppointmentModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteAppointmentModalLabel">Confirm Delete</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">Are you sure you want to delete appointment for <strong
+                            id="deleteApptEntityName">this record</strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form id="deleteApptForm" method="post"
+                        th:action="@{'/secured/appointment/delete/' + ${appointment.appointmentId}}">
+                        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}"
+                            th:value="${_csrf.token}" />
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script th:inline="javascript">
+        (function () {
+            var modal = document.getElementById('deleteAppointmentModal');
+            if (!modal) return;
+            modal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget;
+                if (!button) return;
+                var id = button.getAttribute('data-entity-id');
+                var name = button.getAttribute('data-entity-name') || 'this appointment';
+                var form = document.getElementById('deleteApptForm');
+                var nameEl = document.getElementById('deleteApptEntityName');
+                if (nameEl) nameEl.textContent = name;
+                if (form && id) {
+                    var target = '/secured/appointment/delete/' + id;
+                    form.setAttribute('action', window.location.origin + target);
+                }
+            });
+            var form = document.getElementById('deleteApptForm');
+            if (form) {
+                form.addEventListener('submit', function (e) {
+                    var action = form.getAttribute('action');
+                    if (!action || !/\/secured\/appointment\/delete\/\d+$/.test(action)) {
+                        e.preventDefault();
+                    }
+                });
+            }
+        })();
+    </script>
 </body>
 
 </html>

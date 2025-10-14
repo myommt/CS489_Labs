@@ -90,6 +90,22 @@ public class SurgeryLocationController {
         return "secured/location/view";
     }
 
+    /** Delete location (from UI) */
+    @PostMapping("/secured/location/delete/{id}")
+    public String deleteLocationUi(@PathVariable Integer id, RedirectAttributes ra) {
+        try {
+            boolean deleted = surgeryLocationService.deleteSurgeryLocationById(id);
+            if (deleted) {
+                ra.addFlashAttribute("successMessage", "Surgery location deleted successfully.");
+            } else {
+                ra.addFlashAttribute("errorMessage", "Surgery location not found with ID: " + id);
+            }
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorMessage", "Error deleting location: " + e.getMessage());
+        }
+        return "redirect:/secured/location/list";
+    }
+
     @GetMapping("/secured/location/search")
     public String searchLocations(
             @RequestParam(required = false) String name,

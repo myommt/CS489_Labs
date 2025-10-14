@@ -145,11 +145,10 @@
                                             <a th:href="@{/secured/dentist/edit/{id}(id=${d.dentistId})}"
                                                 class="btn btn-sm btn-outline-primary" title="Edit"><i
                                                     class="fas fa-edit"></i></a>
-                                            <form th:action="@{/secured/dentist/delete/{id}(id=${d.dentistId})}"
-                                                method="post" class="d-inline">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger"
-                                                    title="Delete"><i class="fas fa-trash"></i></button>
-                                            </form>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" title="Delete"
+                                                data-bs-toggle="modal" data-bs-target="#deleteDentistModal"
+                                                th:attr="data-dentist-id=${d.dentistId}, data-dentist-name=${d.firstName + ' ' + d.lastName}"><i
+                                                    class="fas fa-trash"></i></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -172,7 +171,59 @@
                 </div>
             </div>
         </main>
+        <!-- Delete Confirmation Modal -->
+        <div class="modal fade" id="deleteDentistModal" tabindex="-1" aria-labelledby="deleteDentistModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title" id="deleteDentistModalLabel">Confirm Deletion</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete dentist <strong id="modalDeleteDentistName"></strong>? This
+                        action cannot be undone.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form id="modalDeleteDentistForm" method="post">
+                            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}"
+                                th:value="${_csrf.token}" />
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <footer th:replace="~{fragments/footer :: footer}"></footer>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const modalEl = document.getElementById('deleteDentistModal');
+                if (!modalEl) return;
+                modalEl.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget;
+                    if (!button) return;
+                    const id = button.getAttribute('data-dentist-id');
+                    const name = button.getAttribute('data-dentist-name');
+                    const nameHolder = modalEl.querySelector('#modalDeleteDentistName');
+                    if (nameHolder) nameHolder.textContent = name || '';
+                    const form = modalEl.querySelector('#modalDeleteDentistForm');
+                    if (form) form.setAttribute('action', window.location.origin + '/secured/dentist/delete/' + id);
+                });
+                const form = document.getElementById('modalDeleteDentistForm');
+                if (form) {
+                    form.addEventListener('submit', function (e) {
+                        const action = form.getAttribute('action') || '';
+                        if (!/\/secured\/dentist\/delete\/\d+$/.test(action)) {
+                            e.preventDefault(); e.stopPropagation();
+                        }
+                    });
+                }
+            });
+        </script>
     </div>
 
     <script>

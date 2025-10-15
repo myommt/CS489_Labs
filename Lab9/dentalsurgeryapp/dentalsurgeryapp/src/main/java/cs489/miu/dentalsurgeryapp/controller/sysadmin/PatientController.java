@@ -159,7 +159,7 @@ public class PatientController {
     @GetMapping("/secured/patient/search")
     public String searchPatients(@RequestParam(required = false) String firstName,
                                 @RequestParam(required = false) String lastName,
-                                @RequestParam(required = false) String phone,
+                                @RequestParam(required = false) String contactNumber,
                                 @RequestParam(required = false) String email,
                                 @RequestParam(required = false) String patientNumber,
                                 @RequestParam(required = false) String city,
@@ -167,7 +167,7 @@ public class PatientController {
 
         boolean hasSearchParams = (firstName != null && !firstName.trim().isEmpty()) ||
                                  (lastName != null && !lastName.trim().isEmpty()) ||
-                                 (phone != null && !phone.trim().isEmpty()) ||
+                                 (contactNumber != null && !contactNumber.trim().isEmpty()) ||
                                  (email != null && !email.trim().isEmpty()) ||
                                  (patientNumber != null && !patientNumber.trim().isEmpty()) ||
                                  (city != null && !city.trim().isEmpty());

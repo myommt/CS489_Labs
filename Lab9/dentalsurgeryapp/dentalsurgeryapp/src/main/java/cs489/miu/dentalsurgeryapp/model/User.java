@@ -54,6 +54,16 @@ public class User implements UserDetails {
             inverseJoinColumns = {@JoinColumn(name = "role_id", referencedColumnName = "role_id")}
     )
     private List<Role> roles;
+    
+    // Relationship with Dentist entity
+    @OneToOne
+    @JoinColumn(name = "dentist_id", nullable = true)
+    private Dentist dentist;
+    
+    // Relationship with Patient entity  
+    @OneToOne
+    @JoinColumn(name = "patient_id", nullable = true)
+    private Patient patient;
 
     public User() {
         this(null, null);
@@ -167,6 +177,22 @@ public class User implements UserDetails {
 
     public void setRoles(List<Role> roles) {
         this.roles = roles;
+    }
+    
+    public Dentist getDentist() {
+        return dentist;
+    }
+    
+    public void setDentist(Dentist dentist) {
+        this.dentist = dentist;
+    }
+    
+    public Patient getPatient() {
+        return patient;
+    }
+    
+    public void setPatient(Patient patient) {
+        this.patient = patient;
     }
 
     public void setAccountNonExpired(boolean accountNonExpired) {

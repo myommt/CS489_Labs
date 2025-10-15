@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -34,7 +35,8 @@ import java.util.List;
 import java.util.Optional;
 
 @Controller("patientRolebaseController")
-@RequestMapping("/patient")
+@RequestMapping("/dentalsurgeryapp/rolebase/patient")
+@PreAuthorize("hasAuthority('PATIENT')")
 public class PatientController {
 
     @Autowired
@@ -87,12 +89,16 @@ public class PatientController {
             return "redirect:/login";
         }
 
+        // Get current user from authentication
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) auth.getPrincipal();
+        
         UserResponseDTO userDto = new UserResponseDTO();
-        userDto.setUserId(currentPatient.getUser().getUserId());
-        userDto.setUsername(currentPatient.getUser().getUsername());
-        userDto.setEmail(currentPatient.getUser().getEmail());
-        userDto.setFirstName(currentPatient.getUser().getFirstName());
-        userDto.setLastName(currentPatient.getUser().getLastName());
+        userDto.setUserId(currentUser.getUserId());
+        userDto.setUsername(currentUser.getUsername());
+        userDto.setEmail(currentUser.getEmail());
+        userDto.setFirstName(currentUser.getFirstName());
+        userDto.setLastName(currentUser.getLastName());
 
         model.addAttribute("patient", currentPatient);
         model.addAttribute("user", userDto);
@@ -106,8 +112,8 @@ public class PatientController {
     @PostMapping("/profile/edit")
     public String editProfile(@Valid @ModelAttribute("user") UserUpdateRequestDTO userDto,
                               BindingResult bindingResult,
-                              @RequestParam("dateOfBirth") String dateOfBirth,
-                              @RequestParam("phone") String phone,
+                              @RequestParam("dob") String dob,
+                              @RequestParam("contactNumber") String contactNumber,
                               @RequestParam("address") String address,
                               RedirectAttributes redirectAttributes,
                               Model model) {
@@ -125,22 +131,23 @@ public class PatientController {
 
         try {
             // Update user information
-            User user = currentPatient.getUser();
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            User user = (User) auth.getPrincipal();
             user.setFirstName(userDto.getFirstName());
             user.setLastName(userDto.getLastName());
             user.setEmail(userDto.getEmail());
             userService.updateUser(user);
 
             // Update patient-specific information
-            if (dateOfBirth != null && !dateOfBirth.isEmpty()) {
-                currentPatient.setDateOfBirth(LocalDate.parse(dateOfBirth));
+            if (dob != null && !dob.isEmpty()) {
+                currentPatient.setDob(LocalDate.parse(dob));
             }
-            currentPatient.setPhone(phone);
+            currentPatient.setContactNumber(contactNumber);
             // Note: Address would need proper handling with Address entity
             patientService.updatePatient(currentPatient);
 
             redirectAttributes.addFlashAttribute("successMessage", "Profile updated successfully!");
-            return "redirect:/patient/profile";
+            return "redirect:/dentalsurgeryapp/rolebase/patient/profile";
 
         } catch (Exception e) {
             model.addAttribute("patient", currentPatient);
@@ -240,7 +247,7 @@ public class PatientController {
             Appointment appointment = appointmentService.createAppointment(appointmentDto);
             redirectAttributes.addFlashAttribute("successMessage", 
                 "Appointment booked successfully! Reference ID: " + appointment.getAppointmentId());
-            return "redirect:/patient/appointments";
+            return "redirect:/dentalsurgeryapp/rolebase/patient/appointments";
 
         } catch (AppointmentLimitExceededException | OutstandingBillException e) {
             List<Dentist> dentists = dentistService.findAllDentists();
@@ -390,6 +397,7 @@ public class PatientController {
             return null;
         }
 
-        return patientService.findPatientByUser(userOpt.get()).orElse(null);
+        // Get patient directly from user
+        return userOpt.get().getPatient();
     }
 }

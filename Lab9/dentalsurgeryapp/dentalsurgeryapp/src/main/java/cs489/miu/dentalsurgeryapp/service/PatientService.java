@@ -18,9 +18,6 @@ public interface PatientService {
     boolean deletePatientById(Integer id);
     List<Patient> searchPatients(String searchString);
     Patient findOrCreatePatient(Patient patient);
-    
-    // New methods for patient portal
-    Optional<Patient> findPatientByUser(User user);
 
 }
 

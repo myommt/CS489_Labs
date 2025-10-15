@@ -48,17 +48,5 @@ public class Patient {
     @JoinColumn(name = "billing_address_id", nullable= true )// @JoinColumn(name = "address_id", nullable= true,unique=true )
     @Valid
     private Address address;
-    
-    @OneToOne
-    @JoinColumn(name = "user_id", nullable = true)
-    private User user;
-    
-    // Additional fields for patient portal
-    @Column(name = "phone")
-    private String phone;
-    
-    @Column(name = "date_of_birth")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")  
-    private LocalDate dateOfBirth;
 
 }

@@ -19,9 +19,12 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableWebSecurity
 public class DentalSurgeryWebAppSecurityConfiguration {
     private final UserDetailsService dentalSurgeryUserDetailsService;
+    private final CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
 
-    public DentalSurgeryWebAppSecurityConfiguration(DentalSurgeryUserDetailsService dentalSurgeryUserDetailsService) {
+    public DentalSurgeryWebAppSecurityConfiguration(DentalSurgeryUserDetailsService dentalSurgeryUserDetailsService,
+                                                   CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler) {
         this.dentalSurgeryUserDetailsService = dentalSurgeryUserDetailsService;
+        this.customAuthenticationSuccessHandler = customAuthenticationSuccessHandler;
     }
 
     @Bean
@@ -46,14 +49,14 @@ public class DentalSurgeryWebAppSecurityConfiguration {
                                     .requestMatchers("/contact").permitAll()
                                     .requestMatchers("/public/**").permitAll()
                                     .requestMatchers("/secured/**").hasRole("SYSADMIN") 
-                                    .requestMatchers("/rolebase/patient/**").hasAnyRole("PATIENT")
-                                    .requestMatchers("/rolebase/dentist/**").hasAnyRole("DENTIST") 
+                                    .requestMatchers("/dentalsurgeryapp/rolebase/patient/**").hasAnyRole("PATIENT")
+                                    .requestMatchers("/dentalsurgeryapp/rolebase/dentist/**").hasAnyRole("DENTIST") 
                                     .anyRequest().authenticated();
                         }
                 )
                 .formLogin(httpSecurityFormLoginConfigurer -> httpSecurityFormLoginConfigurer
                         .loginPage("/public/login")
-                        .defaultSuccessUrl("/secured/dashboard")
+                        .successHandler(customAuthenticationSuccessHandler)
                         .failureUrl("/public/login?error").permitAll())
                 .logout(httpSecurityLogoutConfigurer -> httpSecurityLogoutConfigurer
                         .logoutRequestMatcher(new AntPathRequestMatcher("/public/logout"))

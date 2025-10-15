@@ -1,9 +1,16 @@
 package cs489.miu.dentalsurgeryapp.controller.sysadmin;
 
 import java.util.List;
+import java.util.Collection;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -56,6 +63,105 @@ public class AppointmentController {
         model.addAttribute("appointments", appointments);
         model.addAttribute(PAGE_TITLE, "Appointment List");
         return "secured/appointment/list";
+    }
+
+    @GetMapping("/secured/appointment/my-appointments")
+    public String listMyAppointments(Model model, Authentication authentication,
+                                    @RequestParam(defaultValue = "0") int page,
+                                    @RequestParam(defaultValue = "10") int size,
+                                    @RequestParam(defaultValue = "appointmentDateTime") String sortBy,
+                                    @RequestParam(defaultValue = "asc") String sortDir,
+                                    @RequestParam(required = false) String status) {
+        
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/login";
+        }
+        
+        User currentUser = (User) authentication.getPrincipal();
+        Collection<? extends GrantedAuthority> authorities = currentUser.getAuthorities();
+        
+        // Check if user is a dentist
+        boolean isDentist = authorities.stream().anyMatch(auth -> auth.getAuthority().equals("ROLE_DENTIST"));
+        
+        if (isDentist && currentUser.getDentist() != null) {
+            // Redirect to dentist's role-based appointments page with proper data
+            Dentist dentist = currentUser.getDentist();
+            
+            // Create pageable with sorting
+            Sort sort = sortDir.equalsIgnoreCase("desc") ? 
+                       Sort.by(sortBy).descending() : 
+                       Sort.by(sortBy).ascending();
+            Pageable pageable = PageRequest.of(page, size, sort);
+            
+            // Get appointments for this dentist
+            Page<Appointment> appointments;
+            if (status != null && !status.isEmpty()) {
+                AppointmentStatus appointmentStatus = AppointmentStatus.valueOf(status.toUpperCase());
+                appointments = appointmentService.findAppointmentsByDentistAndStatus(dentist, appointmentStatus, pageable);
+            } else {
+                appointments = appointmentService.findAppointmentsByDentist(dentist, pageable);
+            }
+            
+            // Add model attributes expected by dentist appointments template
+            model.addAttribute("dentist", dentist);
+            model.addAttribute("appointments", appointments);
+            model.addAttribute("currentPage", page);
+            model.addAttribute("pageSize", size);
+            model.addAttribute("sortBy", sortBy);
+            model.addAttribute("sortDir", sortDir);
+            model.addAttribute("selectedStatus", status);
+            model.addAttribute("appointmentStatuses", AppointmentStatus.values());
+            
+            return "rolebase/dentist/appointments";
+        } else {
+            // For non-dentist users, redirect to dashboard or show error
+            return "redirect:/secured/dashboard";
+        }
+    }
+
+    @GetMapping("/secured/patient/history")
+    public String patientHistory(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/login";
+        }
+        
+        User currentUser = (User) authentication.getPrincipal();
+        Collection<? extends GrantedAuthority> authorities = currentUser.getAuthorities();
+        
+        // Check if user is a dentist
+        boolean isDentist = authorities.stream().anyMatch(auth -> auth.getAuthority().equals("ROLE_DENTIST"));
+        
+        if (isDentist) {
+            // Redirect to dentist dashboard
+            return "redirect:/dentalsurgeryapp/rolebase/dentist/dashboard";
+        } else {
+            // For other users, redirect to main dashboard
+            return "redirect:/secured/dashboard";
+        }
+    }
+
+    @GetMapping("/secured/patient/appointments/new")
+    public String patientAppointmentsNew(Authentication authentication) {
+        // This route is being removed as requested
+        // Redirect users to appropriate dashboard based on their role
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return "redirect:/login";
+        }
+        
+        User currentUser = (User) authentication.getPrincipal();
+        Collection<? extends GrantedAuthority> authorities = currentUser.getAuthorities();
+        
+        // Check user roles and redirect appropriately
+        boolean isDentist = authorities.stream().anyMatch(auth -> auth.getAuthority().equals("ROLE_DENTIST"));
+        boolean isPatient = authorities.stream().anyMatch(auth -> auth.getAuthority().equals("ROLE_PATIENT"));
+        
+        if (isDentist) {
+            return "redirect:/dentalsurgeryapp/rolebase/dentist/dashboard";
+        } else if (isPatient) {
+            return "redirect:/dentalsurgeryapp/rolebase/patient/dashboard";
+        } else {
+            return "redirect:/secured/dashboard";
+        }
     }
 
     @GetMapping("/secured/appointment/new")

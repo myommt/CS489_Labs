@@ -45,9 +45,9 @@
                                     th:value="${param.lastName}" placeholder="Search by last name...">
                             </div>
                             <div class="col-md-3">
-                                <label for="phone" class="form-label">Phone</label>
-                                <input type="text" class="form-control" name="phone" id="phone"
-                                    th:value="${param.phone}" placeholder="Search by phone...">
+                                <label for="contactNumber" class="form-label">Phone</label>
+                                <input type="text" class="form-control" name="contactNumber" id="contactNumber"
+                                    th:value="${param.contactNumber}" placeholder="Search by phone...">
                             </div>
                             <div class="col-md-3">
                                 <label for="email" class="form-label">Email</label>
@@ -291,7 +291,7 @@
             const searchTerms = [
                 document.getElementById('firstName').value,
                 document.getElementById('lastName').value,
-                document.getElementById('phone').value,
+                document.getElementById('contactNumber').value,
                 document.getElementById('email').value,
                 document.getElementById('patientNumber').value,
                 document.getElementById('city').value

@@ -146,10 +146,5 @@ public class PatientServiceImpl implements PatientService {
         return patientRepository.save(patient);
     }
 
-    @Override
-    public Optional<Patient> findPatientByUser(User user) {
-        return patientRepository.findByUser(user);
-    }
-
 }
 

@@ -1,13 +1,11 @@
 package cs489.miu.dentalsurgeryapp.repository;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import cs489.miu.dentalsurgeryapp.model.Patient;
 import cs489.miu.dentalsurgeryapp.model.Address;
-import cs489.miu.dentalsurgeryapp.model.User;
 
 public interface PatientRepository extends JpaRepository<Patient, Integer> {
     
@@ -24,7 +22,4 @@ public interface PatientRepository extends JpaRepository<Patient, Integer> {
     // Method to check if patient exists by email (assuming email is unique identifier)
     Patient findByEmail(String email);
     
-    // Method to find patient by user
-    Optional<Patient> findByUser(User user);
-
 }

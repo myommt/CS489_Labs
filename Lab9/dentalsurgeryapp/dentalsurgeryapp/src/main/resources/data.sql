@@ -49,16 +49,14 @@ INSERT IGNORE INTO patients (patient_id, firstName, lastName, email, contactNumb
 
 -- Update users to link them with dentist/patient records
 UPDATE users SET dentist_id = 1 WHERE user_id = 3; -- Test User is a dentist
-UPDATE users SET dentist_id = 2 WHERE user_id = 6; -- Tony Smith is a dentist
-UPDATE users SET patient_id = 1 WHERE user_id = 2; -- Link one of the PATIENT role users to Test User patient record
-UPDATE users SET patient_id = 2 WHERE user_id = 5; -- Jim B is a patient
+UPDATE users SET dentist_id = 2 WHERE user_id = 5; -- Tony Smith is a dentist
+--UPDATE users SET patient_id = 1 WHERE user_id = 2; -- Link one of the PATIENT role users to Test User patient record
+UPDATE users SET patient_id = 1 WHERE user_id = 5; -- Jim B is a patient
 
--- Assign PATIENT role to users
-INSERT IGNORE INTO users_roles (user_id, role_id) VALUES (5, 3); -- Jim B as patient
-INSERT IGNORE INTO users_roles (user_id, role_id) VALUES (2, 3); -- Second patient
-
---Assign DENTIST role to Test User
-INSERT IGNORE INTO users_roles (user_id, role_id) VALUES (3, 2);
-
---Assign DENTIST role to Tony Smith
-INSERT IGNORE INTO users_roles (user_id, role_id) VALUES (6, 2);
+ 
+INSERT IGNORE INTO users_roles (user_id, role_id) VALUES (1, 1);
+  INSERT IGNORE INTO users_roles (user_id, role_id) VALUES (5, 2);
+ INSERT IGNORE INTO users_roles (user_id, role_id) VALUES (5, 3);  
+INSERT IGNORE INTO users_roles (user_id, role_id) VALUES (2, 1);  
+INSERT IGNORE INTO users_roles (user_id, role_id) VALUES (3, 2); 
+INSERT IGNORE INTO users_roles (user_id, role_id) VALUES (4, 3);

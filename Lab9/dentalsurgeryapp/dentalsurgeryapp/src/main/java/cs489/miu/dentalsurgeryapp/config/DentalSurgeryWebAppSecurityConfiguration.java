@@ -48,6 +48,8 @@ public class DentalSurgeryWebAppSecurityConfiguration {
                                     .requestMatchers("/services").permitAll()
                                     .requestMatchers("/contact").permitAll()
                                     .requestMatchers("/public/**").permitAll()
+                                    .requestMatchers("/secured/appointment/my-appointments").hasRole("DENTIST")
+                                    .requestMatchers("/secured/patient/history").hasRole("PATIENT")
                                     .requestMatchers("/secured/**").hasRole("SYSADMIN") 
                                     .requestMatchers("/dentalsurgeryapp/rolebase/patient/**").hasAnyRole("PATIENT")
                                     .requestMatchers("/dentalsurgeryapp/rolebase/dentist/**").hasAnyRole("DENTIST") 

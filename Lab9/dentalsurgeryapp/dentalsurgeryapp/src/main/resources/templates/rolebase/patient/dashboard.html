@@ -80,9 +80,10 @@
                                         </tr>
                                         <tr th:each="appointment : ${recentAppointments}">
                                             <td
-                                                th:text="${#temporals.format(appointment.appointmentDate, 'MMM dd, yyyy')}">
+                                                th:text="${#temporals.format(appointment.appointmentDateTime, 'MMM dd, yyyy')}">
                                                 Date</td>
-                                            <td th:text="${#temporals.format(appointment.appointmentTime, 'HH:mm')}">
+                                            <td
+                                                th:text="${#temporals.format(appointment.appointmentDateTime, 'HH:mm')}">
                                                 Time</td>
                                             <td th:text="${appointment.dentist.fullName}">Dr. Smith</td>
                                             <td>

@@ -86,7 +86,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr th:if="${#lists.isEmpty(appointments)}">
+                                <tr th:if="${appointments.empty}">
                                     <td colspan="6" class="text-center text-muted py-5">
                                         <i class="fas fa-calendar-times fa-3x mb-3"></i>
                                         <br>
@@ -97,14 +97,15 @@
                                         </a>
                                     </td>
                                 </tr>
-                                <tr th:each="appointment : ${appointments}">
+                                <tr th:each="appointment : ${appointments.content}">
                                     <td>
                                         <div>
                                             <strong
-                                                th:text="${#temporals.format(appointment.appointmentDate, 'MMM dd, yyyy')}">Date</strong>
+                                                th:text="${#temporals.format(appointment.appointmentDateTime, 'MMM dd, yyyy')}">Date</strong>
                                         </div>
                                         <div class="text-muted small"
-                                            th:text="${#temporals.format(appointment.appointmentTime, 'hh:mm a')}">Time
+                                            th:text="${#temporals.format(appointment.appointmentDateTime, 'hh:mm a')}">
+                                            Time
                                         </div>
                                     </td>
                                     <td>
@@ -113,39 +114,44 @@
                                             Specialization</div>
                                     </td>
                                     <td>
-                                        <span class="badge bg-primary">
-                                            <i class="fas fa-video"></i> Online
+                                        <span class="badge bg-primary" th:text="${appointment.appointmentType}">
+                                            Consultation
                                         </span>
                                     </td>
                                     <td>
-                                        <span class="badge bg-warning" th:if="${appointment.status == 'PENDING'}">
+                                        <span class="badge bg-warning"
+                                            th:if="${appointment.appointmentStatus == 'PENDING'}">
                                             <i class="fas fa-clock"></i> Pending
                                         </span>
-                                        <span class="badge bg-success" th:if="${appointment.status == 'CONFIRMED'}">
+                                        <span class="badge bg-success"
+                                            th:if="${appointment.appointmentStatus == 'CONFIRMED'}">
                                             <i class="fas fa-check"></i> Confirmed
                                         </span>
-                                        <span class="badge bg-info" th:if="${appointment.status == 'COMPLETED'}">
+                                        <span class="badge bg-info"
+                                            th:if="${appointment.appointmentStatus == 'COMPLETED'}">
                                             <i class="fas fa-check-double"></i> Completed
                                         </span>
-                                        <span class="badge bg-danger" th:if="${appointment.status == 'CANCELLED'}">
+                                        <span class="badge bg-danger"
+                                            th:if="${appointment.appointmentStatus == 'CANCELLED'}">
                                             <i class="fas fa-times"></i> Cancelled
                                         </span>
                                     </td>
                                     <td>
-                                        <div th:text="${appointment.reason}" class="text-truncate"
-                                            style="max-width: 150px;">Reason</div>
+                                        <div class="text-muted text-center">
+                                            <small>-</small>
+                                        </div>
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm" role="group">
                                             <a th:href="@{/patient/appointments/edit/{id}(id=${appointment.appointmentId})}"
                                                 class="btn btn-outline-primary"
-                                                th:if="${appointment.status == 'PENDING' or appointment.status == 'CONFIRMED'}"
+                                                th:if="${appointment.appointmentStatus == 'PENDING' or appointment.appointmentStatus == 'CONFIRMED'}"
                                                 title="Edit Appointment">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             <button type="button" class="btn btn-outline-danger"
-                                                th:if="${appointment.status == 'PENDING' or appointment.status == 'CONFIRMED'}"
-                                                onclick="cancelAppointment([[${appointment.appointmentId}]])"
+                                                th:if="${appointment.appointmentStatus == 'PENDING' or appointment.appointmentStatus == 'CONFIRMED'}"
+                                                th:onclick="'cancelAppointment(' + ${appointment.appointmentId} + ')'"
                                                 title="Cancel Appointment">
                                                 <i class="fas fa-times"></i>
                                             </button>

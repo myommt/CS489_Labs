@@ -163,7 +163,7 @@ public class PatientController {
     @GetMapping("/appointments")
     public String listAppointments(@RequestParam(defaultValue = "0") int page,
                                    @RequestParam(defaultValue = "10") int size,
-                                   @RequestParam(defaultValue = "appointmentDate") String sortBy,
+                                   @RequestParam(defaultValue = "appointmentDateTime") String sortBy,
                                    @RequestParam(defaultValue = "desc") String sortDir,
                                    @RequestParam(required = false) String status,
                                    Model model) {

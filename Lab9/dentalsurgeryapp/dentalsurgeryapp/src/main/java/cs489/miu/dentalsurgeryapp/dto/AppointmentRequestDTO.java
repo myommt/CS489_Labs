@@ -34,6 +34,9 @@ public class AppointmentRequestDTO {
     @NotNull(message = "Dentist ID is required")  
     private Long dentistId;
     
+    @NotNull(message = "Surgery location is required")
+    private Long surgeryLocationId;
+    
     @NotBlank(message = "Reason for visit is required")
     private String reason;
     

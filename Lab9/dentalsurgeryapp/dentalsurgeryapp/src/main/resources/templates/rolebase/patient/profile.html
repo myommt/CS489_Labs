@@ -28,8 +28,9 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             </div>
 
-                            <form th:action="@{/patient/profile}" th:object="${patient}" method="post">
-                                <input type="hidden" th:field="*{patientId}" />
+                            <form th:action="@{/dentalsurgeryapp/rolebase/patient/profile/edit}" th:object="${user}"
+                                method="post">
+                                <input type="hidden" th:field="*{userId}" />
 
                                 <!-- Personal Information -->
                                 <div class="row mb-3">
@@ -54,16 +55,8 @@
                                 <div class="row mb-3">
                                     <div class="col-md-6">
                                         <label for="dob" class="form-label">Date of Birth</label>
-                                        <input type="date" class="form-control" id="dob" th:field="*{dob}">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="gender" class="form-label">Gender</label>
-                                        <select class="form-select" id="gender" th:field="*{gender}">
-                                            <option value="">Select Gender</option>
-                                            <option value="MALE">Male</option>
-                                            <option value="FEMALE">Female</option>
-                                            <option value="OTHER">Other</option>
-                                        </select>
+                                        <input type="date" class="form-control" id="dob" name="dob"
+                                            th:value="${patient.dob}">
                                     </div>
                                 </div>
 
@@ -72,8 +65,16 @@
                                 <div class="row mb-3">
                                     <div class="col-md-6">
                                         <label for="contactNumber" class="form-label">Phone Number</label>
-                                        <input type="tel" class="form-control" id="contactNumber"
-                                            th:field="*{contactNumber}">
+                                        <input type="tel" class="form-control" id="contactNumber" name="contactNumber"
+                                            th:value="${patient.contactNumber}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="username" class="form-label">Username <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="username" th:field="*{username}"
+                                            required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('username')}"
+                                            th:errors="*{username}"></div>
                                     </div>
                                     <div class="col-md-6">
                                         <label for="email" class="form-label">Email <span
@@ -88,31 +89,15 @@
                                 <!-- Address Information -->
                                 <h5 class="mt-4 mb-3"><i class="fas fa-map-marker-alt"></i> Address</h5>
                                 <div class="mb-3">
-                                    <label for="address.street" class="form-label">Street Address</label>
-                                    <input type="text" class="form-control" id="address.street"
-                                        th:field="*{address.street}">
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <label for="address.city" class="form-label">City</label>
-                                        <input type="text" class="form-control" id="address.city"
-                                            th:field="*{address.city}">
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label for="address.state" class="form-label">State</label>
-                                        <input type="text" class="form-control" id="address.state"
-                                            th:field="*{address.state}">
-                                    </div>
-                                    <div class="col-md-3">
-                                        <label for="address.zipCode" class="form-label">Zip Code</label>
-                                        <input type="text" class="form-control" id="address.zipCode"
-                                            th:field="*{address.zipCode}">
-                                    </div>
+                                    <label for="address" class="form-label">Full Address</label>
+                                    <textarea class="form-control" id="address" name="address" rows="3"
+                                        th:text="${patient.address != null ? patient.address.street + ', ' + patient.address.city + ', ' + patient.address.state + ' ' + patient.address.zipCode : ''}"></textarea>
                                 </div>
 
                                 <!-- Action Buttons -->
                                 <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                                    <a href="/patient/dashboard" class="btn btn-outline-secondary me-md-2">
+                                    <a th:href="@{/dentalsurgeryapp/rolebase/patient/dashboard}"
+                                        class="btn btn-outline-secondary me-md-2">
                                         <i class="fas fa-arrow-left"></i> Back to Dashboard
                                     </a>
                                     <button type="submit" class="btn btn-primary">

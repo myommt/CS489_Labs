@@ -42,10 +42,12 @@
                             <a class="dropdown-item" href="/secured/appointment/my-appointments"
                                 sec:authorize="hasRole('DENTIST')">My Appointments</a>
 
-                            <!-- Patient can create appointments and check history -->
-                            <a class="dropdown-item" href="/secured/patient/appointments/new"
+                            <!-- Patient can access dashboard, create appointments and check history -->
+                            <a class="dropdown-item" th:href="@{/dentalsurgeryapp/rolebase/patient/dashboard}"
+                                sec:authorize="hasRole('PATIENT')">Dashboard</a>
+                            <a class="dropdown-item" th:href="@{/dentalsurgeryapp/rolebase/patient/appointments/new}"
                                 sec:authorize="hasRole('PATIENT')">Book Appointment</a>
-                            <a class="dropdown-item" href="/secured/patient/history"
+                            <a class="dropdown-item" th:href="@{/dentalsurgeryapp/rolebase/patient/appointments}"
                                 sec:authorize="hasRole('PATIENT')">My History</a>
 
                             <div class="dropdown-divider" sec:authorize="hasRole('ADMIN')"></div>

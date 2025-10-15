@@ -32,7 +32,12 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             </div>
 
-                            <form th:action="@{/patient/appointments/new}" th:object="${appointment}" method="post">
+                            <form th:action="@{/dentalsurgeryapp/rolebase/patient/appointments/new}"
+                                th:object="${appointment}" method="post">
+
+                                <!-- Hidden field for Patient ID - automatically set from logged-in patient -->
+                                <input type="hidden" th:field="*{patientId}" />
+
                                 <!-- Appointment Type (Fixed as Online) -->
                                 <div class="mb-3">
                                     <label class="form-label">Appointment Type</label>
@@ -48,15 +53,40 @@
                                 <div class="mb-3">
                                     <label for="dentist" class="form-label">Select Dentist <span
                                             class="text-danger">*</span></label>
-                                    <select class="form-select" id="dentist" th:field="*{dentist.dentistId}" required>
+                                    <select class="form-select" id="dentist" th:field="*{dentistId}" required>
                                         <option value="">Choose a dentist...</option>
                                         <option th:each="dentist : ${dentists}" th:value="${dentist.dentistId}"
                                             th:text="${dentist.fullName + ' - ' + dentist.specialization}">
                                             Dr. Smith - General Dentistry
                                         </option>
                                     </select>
-                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('dentist')}"
-                                        th:errors="*{dentist}"></div>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('dentistId')}"
+                                        th:errors="*{dentistId}"></div>
+                                    <div class="form-text text-danger"
+                                        th:if="${errorMessage != null and errorMessage.contains('Dentist')}">
+                                        Please select a dentist to continue.
+                                    </div>
+                                </div>
+
+                                <!-- Surgery Location Selection -->
+                                <div class="mb-3">
+                                    <label for="surgeryLocation" class="form-label">Select Surgery Location <span
+                                            class="text-danger">*</span></label>
+                                    <select class="form-select" id="surgeryLocation" th:field="*{surgeryLocationId}"
+                                        required>
+                                        <option value="">Choose a surgery location...</option>
+                                        <option th:each="location : ${surgeryLocations}"
+                                            th:value="${location.surgeryLocationId}"
+                                            th:text="${location.name + ' - ' + location.contactNumber}">
+                                            Main Clinic - (555) 123-4567
+                                        </option>
+                                    </select>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('surgeryLocationId')}"
+                                        th:errors="*{surgeryLocationId}"></div>
+                                    <div class="form-text text-danger"
+                                        th:if="${errorMessage != null and errorMessage.contains('Surgery location')}">
+                                        Please select a surgery location to continue.
+                                    </div>
                                 </div>
 
                                 <!-- Date and Time -->
@@ -70,6 +100,10 @@
                                             required>
                                         <div class="invalid-feedback" th:if="${#fields.hasErrors('appointmentDate')}"
                                             th:errors="*{appointmentDate}"></div>
+                                        <div class="form-text text-danger"
+                                            th:if="${errorMessage != null and errorMessage.contains('date')}">
+                                            Please select a valid appointment date.
+                                        </div>
                                     </div>
                                     <div class="col-md-6">
                                         <label for="appointmentTime" class="form-label">Preferred Time <span
@@ -92,6 +126,10 @@
                                         </select>
                                         <div class="invalid-feedback" th:if="${#fields.hasErrors('appointmentTime')}"
                                             th:errors="*{appointmentTime}"></div>
+                                        <div class="form-text text-danger"
+                                            th:if="${errorMessage != null and errorMessage.contains('time')}">
+                                            Please select a preferred appointment time.
+                                        </div>
                                     </div>
                                 </div>
 
@@ -105,6 +143,10 @@
                                         dentist prepare for your consultation.</div>
                                     <div class="invalid-feedback" th:if="${#fields.hasErrors('reason')}"
                                         th:errors="*{reason}"></div>
+                                    <div class="form-text text-danger"
+                                        th:if="${errorMessage != null and errorMessage.contains('Reason')}">
+                                        Please describe your reason for the visit.
+                                    </div>
                                 </div>
 
                                 <!-- Urgency Level -->
@@ -140,10 +182,11 @@
 
                                 <!-- Action Buttons -->
                                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                                    <a href="/patient/appointments" class="btn btn-outline-secondary me-md-2">
+                                    <a th:href="@{/dentalsurgeryapp/rolebase/patient/appointments}"
+                                        class="btn btn-outline-secondary me-md-2">
                                         <i class="fas fa-arrow-left"></i> Back to Appointments
                                     </a>
-                                    <button type="submit" class="btn btn-primary">
+                                    <button type="submit" class="btn btn-primary" onclick="return validateForm()">
                                         <i class="fas fa-calendar-check"></i> Book Appointment
                                     </button>
                                 </div>
@@ -155,6 +198,64 @@
         </main>
         <footer th:replace="~{fragments/footer :: footer}"></footer>
     </div>
+
+    <script>
+        function validateForm() {
+            let isValid = true;
+            let errorMessage = '';
+
+            // Check dentist selection
+            const dentist = document.getElementById('dentist').value;
+            if (!dentist) {
+                errorMessage += 'Please select a dentist.\n';
+                isValid = false;
+            }
+
+            // Check appointment date
+            const appointmentDate = document.getElementById('appointmentDate').value;
+            if (!appointmentDate) {
+                errorMessage += 'Please select an appointment date.\n';
+                isValid = false;
+            } else {
+                // Check if date is not in the past
+                const selectedDate = new Date(appointmentDate);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                if (selectedDate < today) {
+                    errorMessage += 'Please select a future date.\n';
+                    isValid = false;
+                }
+            }
+
+            // Check appointment time
+            const appointmentTime = document.getElementById('appointmentTime').value;
+            if (!appointmentTime) {
+                errorMessage += 'Please select an appointment time.\n';
+                isValid = false;
+            }
+
+            // Check reason
+            const reason = document.getElementById('reason').value.trim();
+            if (!reason) {
+                errorMessage += 'Please provide a reason for your visit.\n';
+                isValid = false;
+            }
+
+            if (!isValid) {
+                alert('Please correct the following errors:\n\n' + errorMessage);
+                return false;
+            }
+
+            return true;
+        }
+
+        // Auto-fill current date as minimum date
+        document.addEventListener('DOMContentLoaded', function () {
+            const dateInput = document.getElementById('appointmentDate');
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.setAttribute('min', today);
+        });
+    </script>
 </body>
 
 </html>

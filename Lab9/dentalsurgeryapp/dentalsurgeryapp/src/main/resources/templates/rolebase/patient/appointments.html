@@ -16,7 +16,7 @@
                     </h1>
                     <p class="lead">Manage your online dental appointments</p>
                 </div>
-                <a href="/patient/appointments/new" class="btn btn-primary">
+                <a th:href="@{/dentalsurgeryapp/rolebase/patient/appointments/new}" class="btn btn-primary">
                     <i class="fas fa-plus"></i> Book New Appointment
                 </a>
             </div>
@@ -62,7 +62,8 @@
                             <button type="submit" class="btn btn-outline-primary me-2">
                                 <i class="fas fa-filter"></i> Filter
                             </button>
-                            <a href="/patient/appointments" class="btn btn-outline-secondary">
+                            <a th:href="@{/dentalsurgeryapp/rolebase/patient/appointments}"
+                                class="btn btn-outline-secondary">
                                 <i class="fas fa-times"></i> Clear
                             </a>
                         </div>
@@ -92,7 +93,8 @@
                                         <br>
                                         <h5>No appointments found</h5>
                                         <p>You haven't booked any appointments yet.</p>
-                                        <a href="/patient/appointments/new" class="btn btn-primary">
+                                        <a th:href="@{/dentalsurgeryapp/rolebase/patient/appointments/new}"
+                                            class="btn btn-primary">
                                             <i class="fas fa-plus"></i> Book Your First Appointment
                                         </a>
                                     </td>
@@ -143,7 +145,7 @@
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm" role="group">
-                                            <a th:href="@{/patient/appointments/edit/{id}(id=${appointment.appointmentId})}"
+                                            <a th:href="@{/dentalsurgeryapp/rolebase/patient/appointments/edit/{id}(id=${appointment.appointmentId})}"
                                                 class="btn btn-outline-primary"
                                                 th:if="${appointment.appointmentStatus == 'PENDING' or appointment.appointmentStatus == 'CONFIRMED'}"
                                                 title="Edit Appointment">
@@ -155,7 +157,7 @@
                                                 title="Cancel Appointment">
                                                 <i class="fas fa-times"></i>
                                             </button>
-                                            <a th:href="@{/patient/appointments/view/{id}(id=${appointment.appointmentId})}"
+                                            <a th:href="@{/dentalsurgeryapp/rolebase/patient/appointments/view/{id}(id=${appointment.appointmentId})}"
                                                 class="btn btn-outline-info" title="View Details">
                                                 <i class="fas fa-eye"></i>
                                             </a>
@@ -195,7 +197,7 @@
     <script>
         function cancelAppointment(appointmentId) {
             const form = document.getElementById('cancelForm');
-            form.action = '/patient/appointments/cancel/' + appointmentId;
+            form.action = '/dentalsurgeryapp/rolebase/patient/appointments/cancel/' + appointmentId;
             const modal = new bootstrap.Modal(document.getElementById('cancelModal'));
             modal.show();
         }

@@ -223,8 +223,28 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     public Appointment createAppointment(AppointmentRequestDTO appointmentDto) throws AppointmentLimitExceededException, OutstandingBillException {
         try {
+            // Validate required fields first
+            if (appointmentDto.getPatientId() == null) {
+                throw new IllegalArgumentException("Patient ID is required");
+            }
+            if (appointmentDto.getDentistId() == null) {
+                throw new IllegalArgumentException("Dentist ID is required");
+            }
+            if (appointmentDto.getSurgeryLocationId() == null) {
+                throw new IllegalArgumentException("Surgery location ID is required");
+            }
+            if (appointmentDto.getAppointmentDate() == null) {
+                throw new IllegalArgumentException("Appointment date is required");
+            }
+            if (appointmentDto.getAppointmentTime() == null || appointmentDto.getAppointmentTime().trim().isEmpty()) {
+                throw new IllegalArgumentException("Appointment time is required");
+            }
+            
             // Get the patient
             Patient patient = patientService.getPatientById(appointmentDto.getPatientId().intValue());
+            if (patient == null) {
+                throw new IllegalArgumentException("Patient not found with ID: " + appointmentDto.getPatientId());
+            }
             
             // Get the dentist
             Optional<Dentist> dentistOpt = dentistService.findDentistById(appointmentDto.getDentistId().intValue());
@@ -232,25 +252,43 @@ public class AppointmentServiceImpl implements AppointmentService {
                 throw new IllegalArgumentException("Dentist not found with ID: " + appointmentDto.getDentistId());
             }
             
+            // Get the surgery location
+            Optional<SurgeryLocation> surgeryLocationOpt = surgeryLocationService.findSurgeryLocationById(appointmentDto.getSurgeryLocationId().intValue());
+            if (surgeryLocationOpt.isEmpty()) {
+                throw new IllegalArgumentException("Surgery location not found with ID: " + appointmentDto.getSurgeryLocationId());
+            }
+            
             // Create new appointment
             Appointment appointment = new Appointment();
             appointment.setPatient(patient);
             appointment.setDentist(dentistOpt.get());
+            appointment.setSurgeryLocation(surgeryLocationOpt.get());
             appointment.setAppointmentType(appointmentDto.getAppointmentType());
-            appointment.setAppointmentStatus(appointmentDto.getStatus().name());
             
-            // Combine date and time
-            LocalDateTime appointmentDateTime = LocalDateTime.of(
-                appointmentDto.getAppointmentDate(),
-                LocalTime.parse(appointmentDto.getAppointmentTime())
-            );
-            appointment.setAppointmentDateTime(appointmentDateTime);
+            // Handle appointment status safely
+            String status = appointmentDto.getStatus() != null ? 
+                appointmentDto.getStatus().name() : AppointmentStatus.PENDING.name();
+            appointment.setAppointmentStatus(status);
+            
+            // Combine date and time with error handling
+            try {
+                LocalDateTime appointmentDateTime = LocalDateTime.of(
+                    appointmentDto.getAppointmentDate(),
+                    LocalTime.parse(appointmentDto.getAppointmentTime())
+                );
+                appointment.setAppointmentDateTime(appointmentDateTime);
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Invalid date or time format. Date: " + 
+                    appointmentDto.getAppointmentDate() + ", Time: " + appointmentDto.getAppointmentTime(), e);
+            }
             
             // Note: Additional fields like reason would need to be added to Appointment model
             
             return addNewAppointment(appointment);
             
         } catch (AppointmentLimitExceededException | OutstandingBillException e) {
+            throw e;
+        } catch (IllegalArgumentException e) {
             throw e;
         } catch (Exception e) {
             throw new IllegalStateException("Error creating appointment: " + e.getMessage(), e);
@@ -273,6 +311,13 @@ public class AppointmentServiceImpl implements AppointmentService {
                 Optional<Dentist> dentistOpt = dentistService.findDentistById(appointmentDto.getDentistId().intValue());
                 if (dentistOpt.isPresent()) {
                     existing.setDentist(dentistOpt.get());
+                }
+            }
+            
+            if (appointmentDto.getSurgeryLocationId() != null) {
+                Optional<SurgeryLocation> surgeryLocationOpt = surgeryLocationService.findSurgeryLocationById(appointmentDto.getSurgeryLocationId().intValue());
+                if (surgeryLocationOpt.isPresent()) {
+                    existing.setSurgeryLocation(surgeryLocationOpt.get());
                 }
             }
             

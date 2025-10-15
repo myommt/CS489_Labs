@@ -2,17 +2,18 @@ package cs489.miu.dentalsurgeryapp.controller.rolebase.patient;
 
 import cs489.miu.dentalsurgeryapp.dto.AppointmentRequestDTO;
 import cs489.miu.dentalsurgeryapp.dto.request.UserUpdateRequestDTO;
-import cs489.miu.dentalsurgeryapp.dto.response.UserResponseDTO;
 import cs489.miu.dentalsurgeryapp.exception.AppointmentLimitExceededException;
 import cs489.miu.dentalsurgeryapp.exception.OutstandingBillException;
 import cs489.miu.dentalsurgeryapp.model.Appointment;
 import cs489.miu.dentalsurgeryapp.model.AppointmentStatus;
 import cs489.miu.dentalsurgeryapp.model.Dentist;
 import cs489.miu.dentalsurgeryapp.model.Patient;
+import cs489.miu.dentalsurgeryapp.model.SurgeryLocation;
 import cs489.miu.dentalsurgeryapp.model.User;
 import cs489.miu.dentalsurgeryapp.service.AppointmentService;
 import cs489.miu.dentalsurgeryapp.service.DentistService;
 import cs489.miu.dentalsurgeryapp.service.PatientService;
+import cs489.miu.dentalsurgeryapp.service.SurgeryLocationService;
 import cs489.miu.dentalsurgeryapp.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +52,9 @@ public class PatientController {
     @Autowired
     private DentistService dentistService;
 
+    @Autowired
+    private SurgeryLocationService surgeryLocationService;
+
     /**
      * Patient Dashboard
      */
@@ -62,7 +66,7 @@ public class PatientController {
         }
 
         // Get recent appointments
-        Pageable pageable = PageRequest.of(0, 5, Sort.by("appointmentDate").descending());
+        Pageable pageable = PageRequest.of(0, 5, Sort.by("appointmentDateTime").descending());
         Page<Appointment> recentAppointments = appointmentService.findAppointmentsByPatient(currentPatient, pageable);
 
         // Get appointment counts
@@ -93,12 +97,13 @@ public class PatientController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) auth.getPrincipal();
         
-        UserResponseDTO userDto = new UserResponseDTO();
+        UserUpdateRequestDTO userDto = new UserUpdateRequestDTO();
         userDto.setUserId(currentUser.getUserId());
         userDto.setUsername(currentUser.getUsername());
         userDto.setEmail(currentUser.getEmail());
         userDto.setFirstName(currentUser.getFirstName());
         userDto.setLastName(currentUser.getLastName());
+        userDto.setEnabled(currentUser.isEnabled());
 
         model.addAttribute("patient", currentPatient);
         model.addAttribute("user", userDto);
@@ -208,11 +213,19 @@ public class PatientController {
 
         AppointmentRequestDTO appointmentDto = new AppointmentRequestDTO();
         appointmentDto.setAppointmentType("ONLINE");
+        appointmentDto.setUrgency("MEDIUM"); // Set default urgency
+        
+        // Pre-populate patient ID from currently logged-in patient
+        if (currentPatient.getPatientId() != null) {
+            appointmentDto.setPatientId(currentPatient.getPatientId().longValue());
+        }
         
         List<Dentist> dentists = dentistService.findAllDentists();
+        List<SurgeryLocation> surgeryLocations = surgeryLocationService.getAllSurgeryLocations();
         
         model.addAttribute("appointment", appointmentDto);
         model.addAttribute("dentists", dentists);
+        model.addAttribute("surgeryLocations", surgeryLocations);
 
         return "rolebase/patient/appointment-new";
     }
@@ -230,19 +243,73 @@ public class PatientController {
         if (currentPatient == null) {
             return "redirect:/login";
         }
+        
+        // Debug: Log submitted data
+        System.err.println("=== FORM SUBMISSION DEBUG ===");
+        System.err.println("Form PatientId: " + appointmentDto.getPatientId());
+        System.err.println("Current Patient ID: " + (currentPatient != null ? currentPatient.getPatientId() : "null"));
+        System.err.println("AppointmentDate: " + appointmentDto.getAppointmentDate());
+        System.err.println("AppointmentTime: " + appointmentDto.getAppointmentTime());
+        System.err.println("DentistId: " + appointmentDto.getDentistId());
+        System.err.println("Reason: " + appointmentDto.getReason());
+        System.err.println("AppointmentType: " + appointmentDto.getAppointmentType());
+        System.err.println("Status: " + appointmentDto.getStatus());
+        System.err.println("=== END DEBUG ===");
 
         if (bindingResult.hasErrors()) {
             List<Dentist> dentists = dentistService.findAllDentists();
+            List<SurgeryLocation> surgeryLocations = surgeryLocationService.getAllSurgeryLocations();
             model.addAttribute("dentists", dentists);
+            model.addAttribute("surgeryLocations", surgeryLocations);
+            
+            // Debug: Log binding errors
+            System.err.println("=== BINDING ERRORS ===");
+            bindingResult.getAllErrors().forEach(error -> 
+                System.err.println("Error: " + error.getDefaultMessage()));
+            System.err.println("=== END BINDING ERRORS ===");
+            
             model.addAttribute("errorMessage", "Please correct the errors in the form");
             return "rolebase/patient/appointment-new";
         }
 
         try {
-            // Set patient and default values
-            appointmentDto.setPatientId(currentPatient.getPatientId().longValue());
-            appointmentDto.setStatus(AppointmentStatus.PENDING);
-            appointmentDto.setAppointmentType("ONLINE");
+            // Validate required fields
+            if (appointmentDto.getAppointmentDate() == null) {
+                throw new IllegalArgumentException("Appointment date is required");
+            }
+            if (appointmentDto.getAppointmentTime() == null || appointmentDto.getAppointmentTime().trim().isEmpty()) {
+                throw new IllegalArgumentException("Appointment time is required");
+            }
+            if (appointmentDto.getDentistId() == null) {
+                throw new IllegalArgumentException("Dentist selection is required");
+            }
+            if (appointmentDto.getReason() == null || appointmentDto.getReason().trim().isEmpty()) {
+                throw new IllegalArgumentException("Reason for visit is required");
+            }
+
+            // Verify patient ID is bound from form - if not, set it from current patient
+            if (appointmentDto.getPatientId() == null) {
+                if (currentPatient.getPatientId() != null) {
+                    appointmentDto.setPatientId(currentPatient.getPatientId().longValue());
+                } else {
+                    throw new IllegalArgumentException("Current patient ID is null");
+                }
+            }
+            
+            // Verify the form's patient ID matches the logged-in patient (security check)
+            if (!appointmentDto.getPatientId().equals(currentPatient.getPatientId().longValue())) {
+                throw new IllegalArgumentException("Patient ID mismatch - security violation");
+            }
+            
+            // Set default status if not already set
+            if (appointmentDto.getStatus() == null) {
+                appointmentDto.setStatus(AppointmentStatus.PENDING);
+            }
+            
+            // Ensure appointment type is set
+            if (appointmentDto.getAppointmentType() == null || appointmentDto.getAppointmentType().trim().isEmpty()) {
+                appointmentDto.setAppointmentType("ONLINE");
+            }
 
             Appointment appointment = appointmentService.createAppointment(appointmentDto);
             redirectAttributes.addFlashAttribute("successMessage", 
@@ -251,12 +318,23 @@ public class PatientController {
 
         } catch (AppointmentLimitExceededException | OutstandingBillException e) {
             List<Dentist> dentists = dentistService.findAllDentists();
+            List<SurgeryLocation> surgeryLocations = surgeryLocationService.getAllSurgeryLocations();
             model.addAttribute("dentists", dentists);
+            model.addAttribute("surgeryLocations", surgeryLocations);
+            model.addAttribute("errorMessage", e.getMessage());
+            return "rolebase/patient/appointment-new";
+        } catch (IllegalArgumentException e) {
+            List<Dentist> dentists = dentistService.findAllDentists();
+            List<SurgeryLocation> surgeryLocations = surgeryLocationService.getAllSurgeryLocations();
+            model.addAttribute("dentists", dentists);
+            model.addAttribute("surgeryLocations", surgeryLocations);
             model.addAttribute("errorMessage", e.getMessage());
             return "rolebase/patient/appointment-new";
         } catch (Exception e) {
             List<Dentist> dentists = dentistService.findAllDentists();
+            List<SurgeryLocation> surgeryLocations = surgeryLocationService.getAllSurgeryLocations();
             model.addAttribute("dentists", dentists);
+            model.addAttribute("surgeryLocations", surgeryLocations);
             model.addAttribute("errorMessage", "Error booking appointment: " + e.getMessage());
             return "rolebase/patient/appointment-new";
         }
@@ -274,20 +352,34 @@ public class PatientController {
 
         Optional<Appointment> appointmentOpt = appointmentService.findAppointmentById(id);
         if (appointmentOpt.isEmpty()) {
-            return "redirect:/patient/appointments";
+            return "redirect:/dentalsurgeryapp/rolebase/patient/appointments";
         }
 
         Appointment appointment = appointmentOpt.get();
         
         // Check if appointment belongs to current patient
         if (!appointment.getPatient().getPatientId().equals(currentPatient.getPatientId())) {
-            return "redirect:/patient/appointments";
+            return "redirect:/dentalsurgeryapp/rolebase/patient/appointments";
         }
 
         List<Dentist> dentists = dentistService.findAllDentists();
         
-        model.addAttribute("appointment", appointment);
+        // Convert entity to DTO for form binding
+        AppointmentRequestDTO appointmentDto = new AppointmentRequestDTO();
+        appointmentDto.setAppointmentId(appointment.getAppointmentId().longValue());
+        appointmentDto.setAppointmentType(appointment.getAppointmentType());
+        appointmentDto.setAppointmentStatus(appointment.getAppointmentStatus());
+        appointmentDto.setAppointmentDateTime(appointment.getAppointmentDateTime());
+        appointmentDto.setDentistId(appointment.getDentist().getDentistId().longValue());
+        appointmentDto.setSurgeryLocationId(appointment.getSurgeryLocation().getSurgeryLocationId().longValue());
+        appointmentDto.setPatientId(appointment.getPatient().getPatientId().longValue());
+        
+        List<SurgeryLocation> surgeryLocations = surgeryLocationService.getAllSurgeryLocations();
+        
+        model.addAttribute("appointment", appointmentDto);
+        model.addAttribute("appointmentEntity", appointment); // Keep original for display purposes
         model.addAttribute("dentists", dentists);
+        model.addAttribute("surgeryLocations", surgeryLocations);
 
         return "rolebase/patient/appointment-edit";
     }
@@ -309,20 +401,22 @@ public class PatientController {
 
         Optional<Appointment> appointmentOpt = appointmentService.findAppointmentById(id);
         if (appointmentOpt.isEmpty()) {
-            return "redirect:/patient/appointments";
+            return "redirect:/dentalsurgeryapp/rolebase/patient/appointments";
         }
 
         Appointment appointment = appointmentOpt.get();
         
         // Check if appointment belongs to current patient
         if (!appointment.getPatient().getPatientId().equals(currentPatient.getPatientId())) {
-            return "redirect:/patient/appointments";
+            return "redirect:/dentalsurgeryapp/rolebase/patient/appointments";
         }
 
         if (bindingResult.hasErrors()) {
             List<Dentist> dentists = dentistService.findAllDentists();
+            List<SurgeryLocation> surgeryLocations = surgeryLocationService.getAllSurgeryLocations();
             model.addAttribute("appointment", appointment);
             model.addAttribute("dentists", dentists);
+            model.addAttribute("surgeryLocations", surgeryLocations);
             model.addAttribute("errorMessage", "Please correct the errors in the form");
             return "rolebase/patient/appointment-edit";
         }
@@ -333,12 +427,14 @@ public class PatientController {
             
             appointmentService.updateAppointment(appointmentDto);
             redirectAttributes.addFlashAttribute("successMessage", "Appointment updated successfully!");
-            return "redirect:/patient/appointments";
+            return "redirect:/dentalsurgeryapp/rolebase/patient/appointments";
 
         } catch (Exception e) {
             List<Dentist> dentists = dentistService.findAllDentists();
+            List<SurgeryLocation> surgeryLocations = surgeryLocationService.getAllSurgeryLocations();
             model.addAttribute("appointment", appointment);
             model.addAttribute("dentists", dentists);
+            model.addAttribute("surgeryLocations", surgeryLocations);
             model.addAttribute("errorMessage", "Error updating appointment: " + e.getMessage());
             return "rolebase/patient/appointment-edit";
         }
@@ -358,7 +454,7 @@ public class PatientController {
             Optional<Appointment> appointmentOpt = appointmentService.findAppointmentById(id);
             if (appointmentOpt.isEmpty()) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Appointment not found");
-                return "redirect:/patient/appointments";
+                return "redirect:/dentalsurgeryapp/rolebase/patient/appointments";
             }
 
             Appointment appointment = appointmentOpt.get();
@@ -366,7 +462,7 @@ public class PatientController {
             // Check if appointment belongs to current patient
             if (!appointment.getPatient().getPatientId().equals(currentPatient.getPatientId())) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Access denied");
-                return "redirect:/patient/appointments";
+                return "redirect:/dentalsurgeryapp/rolebase/patient/appointments";
             }
 
             appointment.setAppointmentStatus(AppointmentStatus.CANCELLED.name());
@@ -378,7 +474,7 @@ public class PatientController {
             redirectAttributes.addFlashAttribute("errorMessage", "Error cancelling appointment: " + e.getMessage());
         }
 
-        return "redirect:/patient/appointments";
+        return "redirect:/dentalsurgeryapp/rolebase/patient/appointments";
     }
 
     /**

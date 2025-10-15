@@ -60,3 +60,15 @@ INSERT IGNORE INTO users_roles (user_id, role_id) VALUES (1, 1);
 INSERT IGNORE INTO users_roles (user_id, role_id) VALUES (2, 1);  
 INSERT IGNORE INTO users_roles (user_id, role_id) VALUES (3, 2); 
 INSERT IGNORE INTO users_roles (user_id, role_id) VALUES (4, 3);
+
+-- Insert sample addresses for surgery locations
+INSERT IGNORE INTO addresses (address_id, street, city, state, zipcode) VALUES 
+(1, '123 Main Street', 'Fairfield', 'IA', '52557'),
+(2, '456 Oak Avenue', 'Des Moines', 'IA', '50309'),
+(3, '789 Cedar Lane', 'Iowa City', 'IA', '52240');
+
+-- Insert sample surgery locations
+INSERT IGNORE INTO surgerylocations (surgerylocation_id, name, contactNumber, address_id) VALUES 
+(1, 'Main Dental Clinic', '(641) 555-1234', 1),
+(2, 'Downtown Dental Care', '(515) 555-5678', 2),
+(3, 'University Dental Center', '(319) 555-9012', 3);

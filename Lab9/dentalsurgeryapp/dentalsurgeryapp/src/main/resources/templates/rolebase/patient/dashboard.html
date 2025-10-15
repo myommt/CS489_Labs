@@ -24,7 +24,8 @@
                             <i class="fas fa-calendar-plus fa-3x text-primary mb-3"></i>
                             <h5 class="card-title">Book Appointment</h5>
                             <p class="card-text">Schedule a new online appointment</p>
-                            <a href="/patient/appointments/new" class="btn btn-primary">Book Now</a>
+                            <a th:href="@{/dentalsurgeryapp/rolebase/patient/appointments/new}"
+                                class="btn btn-primary">Book Now</a>
                         </div>
                     </div>
                 </div>
@@ -34,7 +35,8 @@
                             <i class="fas fa-user-edit fa-3x text-success mb-3"></i>
                             <h5 class="card-title">My Profile</h5>
                             <p class="card-text">View and update your information</p>
-                            <a href="/patient/profile" class="btn btn-success">View Profile</a>
+                            <a th:href="@{/dentalsurgeryapp/rolebase/patient/profile}" class="btn btn-success">View
+                                Profile</a>
                         </div>
                     </div>
                 </div>
@@ -44,7 +46,8 @@
                             <i class="fas fa-history fa-3x text-info mb-3"></i>
                             <h5 class="card-title">My Appointments</h5>
                             <p class="card-text">View appointment history</p>
-                            <a href="/patient/appointments" class="btn btn-info">View History</a>
+                            <a th:href="@{/dentalsurgeryapp/rolebase/patient/appointments}" class="btn btn-info">View
+                                History</a>
                         </div>
                     </div>
                 </div>
@@ -74,7 +77,9 @@
                                         <tr th:if="${#lists.isEmpty(recentAppointments)}">
                                             <td colspan="6" class="text-center text-muted">
                                                 <i class="fas fa-calendar-times fa-2x mb-2"></i>
-                                                <br>No appointments found. <a href="/patient/appointments/new">Book your
+                                                <br>No appointments found. <a
+                                                    th:href="@{/dentalsurgeryapp/rolebase/patient/appointments/new}">Book
+                                                    your
                                                     first appointment!</a>
                                             </td>
                                         </tr>
@@ -91,16 +96,16 @@
                                             </td>
                                             <td>
                                                 <span class="badge bg-success"
-                                                    th:if="${appointment.status == 'CONFIRMED'}">Confirmed</span>
+                                                    th:if="${appointment.appointmentStatus == 'CONFIRMED'}">Confirmed</span>
                                                 <span class="badge bg-warning"
-                                                    th:if="${appointment.status == 'PENDING'}">Pending</span>
+                                                    th:if="${appointment.appointmentStatus == 'PENDING'}">Pending</span>
                                                 <span class="badge bg-danger"
-                                                    th:if="${appointment.status == 'CANCELLED'}">Cancelled</span>
+                                                    th:if="${appointment.appointmentStatus == 'CANCELLED'}">Cancelled</span>
                                             </td>
                                             <td>
-                                                <a th:href="@{/patient/appointments/edit/{id}(id=${appointment.appointmentId})}"
+                                                <a th:href="@{/dentalsurgeryapp/rolebase/patient/appointments/edit/{id}(id=${appointment.appointmentId})}"
                                                     class="btn btn-sm btn-outline-primary"
-                                                    th:if="${appointment.status != 'CANCELLED'}">
+                                                    th:if="${appointment.appointmentStatus != 'CANCELLED'}">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                             </td>

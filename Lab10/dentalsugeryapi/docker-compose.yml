@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: dentalsurgery-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: Abcde12345!
+      MYSQL_DATABASE: apsd489
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - dentalsurgery-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  app:
+    build: .
+    container_name: dentalsurgery-app
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/apsd489
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Abcde12345!
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    networks:
+      - dentalsurgery-network
+    restart: on-failure
+
+volumes:
+  mysql_data:
+
+networks:
+  dentalsurgery-network:
+    driver: bridge

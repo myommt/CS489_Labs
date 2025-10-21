@@ -137,6 +137,14 @@
                                             th:if="${appointment.appointmentStatus == 'CANCELLED'}">
                                             <i class="fas fa-times"></i> Cancelled
                                         </span>
+                                        <span class="badge bg-secondary"
+                                            th:if="${appointment.appointmentStatus == 'IN_PROGRESS'}">
+                                            <i class="fas fa-spinner"></i> In Progress
+                                        </span>
+                                        <span class="badge bg-dark"
+                                            th:if="${!(appointment.appointmentStatus == 'PENDING' || appointment.appointmentStatus == 'CONFIRMED' || appointment.appointmentStatus == 'COMPLETED' || appointment.appointmentStatus == 'CANCELLED' || appointment.appointmentStatus == 'IN_PROGRESS')}">
+                                            <span th:text="${appointment.appointmentStatus}">Status</span>
+                                        </span>
                                     </td>
                                     <td>
                                         <div class="text-muted text-center">

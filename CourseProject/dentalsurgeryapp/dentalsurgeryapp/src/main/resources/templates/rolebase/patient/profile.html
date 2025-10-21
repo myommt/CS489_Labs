@@ -88,10 +88,35 @@
 
                                 <!-- Address Information -->
                                 <h5 class="mt-4 mb-3"><i class="fas fa-map-marker-alt"></i> Address</h5>
-                                <div class="mb-3">
-                                    <label for="address" class="form-label">Full Address</label>
-                                    <textarea class="form-control" id="address" name="address" rows="3"
-                                        th:text="${patient.address != null ? patient.address.street + ', ' + patient.address.city + ', ' + patient.address.state + ' ' + patient.address.zipCode : ''}"></textarea>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="street" class="form-label">Street <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="street" name="street"
+                                            th:value="${patient.address != null ? patient.address.street : ''}"
+                                            required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="city" class="form-label">City <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="city" name="city"
+                                            th:value="${patient.address != null ? patient.address.city : ''}" required>
+                                    </div>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="state" class="form-label">State <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="state" name="state"
+                                            th:value="${patient.address != null ? patient.address.state : ''}" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="zipcode" class="form-label">Zip Code <span
+                                                class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="zipcode" name="zipcode"
+                                            th:value="${patient.address != null ? patient.address.zipcode : ''}"
+                                            required>
+                                    </div>
                                 </div>
 
                                 <!-- Action Buttons -->

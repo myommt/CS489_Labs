@@ -130,14 +130,12 @@
                         </div>
                         <div class="col-md-4">
                             <h4 class="text-warning"
-                                th:text="${bills != null ? bills.stream().filter(b -> b.paymentStatus == 'PENDING').count() : 0}">
-                                0</h4>
+                                th:text="${bills != null ? (bills.?[paymentStatus == 'PENDING']).size() : 0}">0</h4>
                             <small class="text-muted">Pending Bills</small>
                         </div>
                         <div class="col-md-4">
                             <h4 class="text-success"
-                                th:text="${bills != null ? bills.stream().filter(b -> b.paymentStatus == 'PAID').count() : 0}">
-                                0</h4>
+                                th:text="${bills != null ? (bills.?[paymentStatus == 'PAID']).size() : 0}">0</h4>
                             <small class="text-muted">Paid Bills</small>
                         </div>
                     </div>

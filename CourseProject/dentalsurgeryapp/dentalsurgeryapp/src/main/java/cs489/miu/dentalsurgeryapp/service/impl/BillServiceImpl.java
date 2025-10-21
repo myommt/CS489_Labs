@@ -56,7 +56,29 @@ public class BillServiceImpl implements BillService {
 
     @Override
     public Bill updateBill(Bill bill) {
-        return billRepository.save(bill);
+        // Preserve immutable relations (patient, appointment) and only update mutable fields
+        Bill existing = billRepository.findById(bill.getBillId()).orElse(null);
+        if (existing == null) {
+            // If not found, fall back to save (will likely fail if relations are missing)
+            return billRepository.save(bill);
+        }
+
+        // Update allowed fields
+        existing.setTotalCost(bill.getTotalCost());
+        existing.setPaymentStatus(bill.getPaymentStatus());
+
+        // Ensure relations remain attached and valid
+        // If incoming has nulls (due to disabled fields not posting), keep existing
+        if (bill.getPatient() != null && bill.getPatient().getPatientId() != null
+                && !bill.getPatient().getPatientId().equals(existing.getPatient().getPatientId())) {
+            // Do not allow changing patient on update; keep existing
+        }
+        if (bill.getAppointment() != null && bill.getAppointment().getAppointmentId() != null
+                && !bill.getAppointment().getAppointmentId().equals(existing.getAppointment().getAppointmentId())) {
+            // Do not allow changing appointment on update; keep existing
+        }
+
+        return billRepository.save(existing);
     }
 
     @Override

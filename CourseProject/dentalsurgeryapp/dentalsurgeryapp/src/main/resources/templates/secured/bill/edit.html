@@ -48,6 +48,8 @@
                                         th:text="${patient.firstName + ' ' + patient.lastName + ' (' + patient.email + ')'}">
                                     </option>
                                 </select>
+                                <!-- Disabled inputs are not submitted; include hidden field to submit the value -->
+                                <input type="hidden" th:field="*{patient.patientId}" />
                                 <small class="text-muted">Patient cannot be changed after bill creation</small>
                             </div>
                             <div class="col-md-6">
@@ -61,6 +63,8 @@
                                         th:text="${appointment.appointmentType + ' - ' + #temporals.format(appointment.appointmentDateTime, 'yyyy-MM-dd HH:mm')}">
                                     </option>
                                 </select>
+                                <!-- Hidden to carry value since select is disabled -->
+                                <input type="hidden" th:field="*{appointment.appointmentId}" />
                                 <small class="text-muted">Appointment cannot be changed after bill creation</small>
                             </div>
                         </div>

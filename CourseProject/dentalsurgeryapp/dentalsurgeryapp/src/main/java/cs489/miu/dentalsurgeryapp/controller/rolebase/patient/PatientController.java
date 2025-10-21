@@ -7,6 +7,7 @@ import cs489.miu.dentalsurgeryapp.exception.OutstandingBillException;
 import cs489.miu.dentalsurgeryapp.model.Appointment;
 import cs489.miu.dentalsurgeryapp.model.AppointmentStatus;
 import cs489.miu.dentalsurgeryapp.model.Dentist;
+import cs489.miu.dentalsurgeryapp.model.Address;
 import cs489.miu.dentalsurgeryapp.model.Patient;
 import cs489.miu.dentalsurgeryapp.model.SurgeryLocation;
 import cs489.miu.dentalsurgeryapp.model.User;
@@ -105,6 +106,10 @@ public class PatientController {
         userDto.setLastName(currentUser.getLastName());
         userDto.setEnabled(currentUser.isEnabled());
 
+        // Ensure address object is non-null so form fields can render values
+        if (currentPatient.getAddress() == null) {
+            currentPatient.setAddress(new Address());
+        }
         model.addAttribute("patient", currentPatient);
         model.addAttribute("user", userDto);
 
@@ -119,7 +124,10 @@ public class PatientController {
                               BindingResult bindingResult,
                               @RequestParam("dob") String dob,
                               @RequestParam("contactNumber") String contactNumber,
-                              @RequestParam("address") String address,
+                              @RequestParam("street") String street,
+                              @RequestParam("city") String city,
+                              @RequestParam("state") String state,
+                              @RequestParam("zipcode") String zipcode,
                               RedirectAttributes redirectAttributes,
                               Model model) {
         
@@ -148,7 +156,20 @@ public class PatientController {
                 currentPatient.setDob(LocalDate.parse(dob));
             }
             currentPatient.setContactNumber(contactNumber);
-            // Note: Address would need proper handling with Address entity
+            // Update or create address: only proceed if all fields provided (avoid partial invalid address)
+            String st = street == null ? "" : street.trim();
+            String ct = city == null ? "" : city.trim();
+            String stt = state == null ? "" : state.trim();
+            String zp = zipcode == null ? "" : zipcode.trim();
+
+            boolean allProvided = !st.isEmpty() && !ct.isEmpty() && !stt.isEmpty() && !zp.isEmpty();
+            if (allProvided) {
+                // Important: don't mutate existing Address entity to avoid updating its record.
+                // Instead, create a new Address instance with desired values; service will
+                // find existing by fields or create a new one and link it.
+                Address addr = new Address(null, st, ct, stt, zp);
+                currentPatient.setAddress(addr);
+            }
             patientService.updatePatient(currentPatient);
 
             redirectAttributes.addFlashAttribute("successMessage", "Profile updated successfully!");
@@ -394,6 +415,17 @@ public class PatientController {
     public String editAppointmentFormAlternate(@PathVariable Long id) {
         // Redirect to canonical mapping
         return "redirect:/dentalsurgeryapp/rolebase/patient/appointments/" + id + "/edit";
+    }
+
+    /**
+     * Alternate URL pattern handler: /appointments/view/{id}
+     * Some links may place 'view' before the id (e.g. /appointments/view/3).
+     * Provide a GET redirect to the canonical URL.
+     */
+    @GetMapping("/appointments/view/{id}")
+    public String viewAppointmentAlternate(@PathVariable Long id) {
+        // Redirect to canonical mapping
+        return "redirect:/dentalsurgeryapp/rolebase/patient/appointments/" + id + "/view";
     }
 
     @PostMapping("/appointments/edit/{id}")

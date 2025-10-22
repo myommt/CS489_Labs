@@ -43,7 +43,10 @@ public class SurgeryLocationController {
 
     @GetMapping("/secured/location/new")
     public String showNewLocationForm(Model model) {
-        model.addAttribute("location", new SurgeryLocation());
+        SurgeryLocation loc = new SurgeryLocation();
+        // Initialize nested address for clean form binding
+        loc.setLocation(new cs489.miu.dentalsurgeryapp.model.Address());
+        model.addAttribute("location", loc);
         model.addAttribute("pageTitle", "Add New Location");
         return "secured/location/new";
     }
@@ -63,7 +66,11 @@ public class SurgeryLocationController {
             ra.addFlashAttribute("errorMessage", "Location not found with ID: " + id);
             return "redirect:/secured/location/list";
         }
-        model.addAttribute("location", loc.get());
+        SurgeryLocation loaded = loc.get();
+        if (loaded.getLocation() == null) {
+            loaded.setLocation(new cs489.miu.dentalsurgeryapp.model.Address());
+        }
+        model.addAttribute("location", loaded);
         model.addAttribute("pageTitle", "Edit Location");
         return "secured/location/edit";
     }

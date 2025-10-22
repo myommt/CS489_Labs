@@ -31,6 +31,8 @@
 
                         <form th:action="@{/dentalsurgeryapp/secured/sysadmin/usermgt/user/edit}" th:object="${user}"
                             method="post" novalidate>
+                            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}"
+                                th:value="${_csrf.token}" />
 
                             <!-- Hidden ID field -->
                             <input type="hidden" th:field="*{userId}">

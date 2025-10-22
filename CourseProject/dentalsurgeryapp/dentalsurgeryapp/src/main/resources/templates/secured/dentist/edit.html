@@ -64,6 +64,8 @@
 
             <form th:action="@{/secured/dentist/edit/{id}(id=${dentist.dentistId})}" th:object="${dentist}"
                 method="post" class="needs-validation" novalidate>
+                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}"
+                    th:value="${_csrf.token}" />
                 <div class="alert alert-danger" th:if="${#fields.hasErrors('*')}" role="alert">
                     Please correct the errors below.
                 </div>

@@ -203,7 +203,8 @@ public class DentistController {
         }
 
         try {
-            appointmentService.saveAppointment(appointment);
+            // Use validated update to enforce weekly limit and other business rules
+            appointmentService.updateAppointment(appointment);
             redirectAttributes.addFlashAttribute("successMessage", "Appointment updated successfully!");
             return REDIRECT_DENTIST_APPOINTMENTS;
         } catch (Exception e) {

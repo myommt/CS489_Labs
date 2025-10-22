@@ -295,32 +295,47 @@ public class AppointmentController {
             appointment.setDentist(dentistService.findDentistById(dentistId).orElseThrow());
             appointment.setSurgeryLocation(surgeryLocationService.findSurgeryLocationById(surgeryLocationId).orElseThrow());
             Appointment updated = appointmentService.updateAppointment(appointment);
-            
-            // Create bill if status is CHECKOUT and totalCost is provided
-            if ("CHECKOUT".equals(appointment.getAppointmentStatus()) && totalCost != null && totalCost > 0) {
-                try {
-                    // Check if bill already exists for this appointment
-                    boolean billExists = billService.getAllBills().stream()
-                        .anyMatch(b -> b.appointment() != null && 
-                                      b.appointment().appointmentId() != null && 
-                                      b.appointment().appointmentId().equals(updated.getAppointmentId()));
-                    
-                    if (!billExists) {
-                        cs489.miu.dentalsurgeryapp.model.Bill bill = new cs489.miu.dentalsurgeryapp.model.Bill();
-                        bill.setTotalCost(java.math.BigDecimal.valueOf(totalCost));
-                        bill.setPaymentStatus(paymentStatus != null ? paymentStatus : "PENDING");
-                        bill.setPatient(updated.getPatient());
-                        bill.setAppointment(updated);
-                        billService.addNewBill(bill);
-                        ra.addFlashAttribute("successMessage", "Appointment updated and bill created successfully.");
+
+            // Handle billing updates/creation
+            try {
+                // Find existing bill for this appointment (via DTOs, then load entity)
+                cs489.miu.dentalsurgeryapp.dto.BillResponseDTO existingBillDto = billService.getAllBills().stream()
+                    .filter(b -> b.appointment() != null
+                              && b.appointment().appointmentId() != null
+                              && b.appointment().appointmentId().equals(updated.getAppointmentId()))
+                    .findFirst()
+                    .orElse(null);
+
+                if (existingBillDto != null) {
+                    // Update existing bill's amount/status if provided
+                    cs489.miu.dentalsurgeryapp.model.Bill existingBill = billService.getBillById(existingBillDto.billId());
+                    if (existingBill != null) {
+                        if (totalCost != null && totalCost > 0) {
+                            existingBill.setTotalCost(java.math.BigDecimal.valueOf(totalCost));
+                        }
+                        if (paymentStatus != null && !paymentStatus.isBlank()) {
+                            existingBill.setPaymentStatus(paymentStatus);
+                        }
+                        billService.updateBill(existingBill);
+                        ra.addFlashAttribute("successMessage", "Appointment updated and bill updated successfully.");
                     } else {
-                        ra.addFlashAttribute("successMessage", "Appointment updated. Bill already exists for this appointment.");
+                        ra.addFlashAttribute("successMessage", "Appointment updated. Related bill could not be loaded for update.");
                     }
-                } catch (Exception e) {
-                    ra.addFlashAttribute("successMessage", "Appointment updated, but bill creation failed: " + e.getMessage());
+                } else if ("CHECKOUT".equals(appointment.getAppointmentStatus()) && totalCost != null && totalCost > 0) {
+                    // No existing bill; create if status is CHECKOUT and amount provided
+                    cs489.miu.dentalsurgeryapp.model.Bill bill = new cs489.miu.dentalsurgeryapp.model.Bill();
+                    bill.setTotalCost(java.math.BigDecimal.valueOf(totalCost));
+                    bill.setPaymentStatus(paymentStatus != null && !paymentStatus.isBlank() ? paymentStatus : "PENDING");
+                    bill.setPatient(updated.getPatient());
+                    bill.setAppointment(updated);
+                    billService.addNewBill(bill);
+                    ra.addFlashAttribute("successMessage", "Appointment updated and bill created successfully.");
+                } else {
+                    // Regular appointment update without billing changes
+                    ra.addFlashAttribute("successMessage", "Appointment #" + updated.getAppointmentId() + " updated successfully.");
                 }
-            } else {
-                ra.addFlashAttribute("successMessage", "Appointment #" + updated.getAppointmentId() + " updated successfully.");
+            } catch (Exception e) {
+                ra.addFlashAttribute("successMessage", "Appointment updated, but billing update failed: " + e.getMessage());
             }
             
             return "redirect:/secured/appointment/list";

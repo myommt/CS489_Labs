@@ -57,8 +57,54 @@ public class AddressController {
     }
 
     @GetMapping("/secured/address/search")
-    public String searchAddresses(@RequestParam(required = false) String searchTerm, Model model) {
-        return listAddresses(searchTerm, model);
+    public String searchAddresses(@RequestParam(required = false) String street,
+                                  @RequestParam(required = false) String city,
+                                  @RequestParam(required = false) String state,
+                                  @RequestParam(required = false) String zipcode,
+                                  Model model) {
+        // Determine if any search criteria was provided
+        boolean hasCriteria = (street != null && !street.isBlank()) ||
+                              (city != null && !city.isBlank()) ||
+                              (state != null && !state.isBlank()) ||
+                              (zipcode != null && !zipcode.isBlank());
+
+        model.addAttribute("pageTitle", hasCriteria ? "Address Search Results" : "Search Addresses");
+        model.addAttribute("searchPerformed", hasCriteria);
+
+        if (!hasCriteria) {
+            // First visit: show the search form with no results
+            return "secured/address/search-result";
+        }
+
+        String streetQ = street == null ? null : street.trim().toLowerCase();
+        String cityQ = city == null ? null : city.trim().toLowerCase();
+        String stateQ = state == null ? null : state.trim().toLowerCase();
+        String zipQ = zipcode == null ? null : zipcode.trim().toLowerCase();
+
+        List<Address> results = addressService.getAllAddresses().stream()
+            .filter(a -> {
+                if (streetQ != null && !streetQ.isBlank()) {
+                    String val = a.getStreet();
+                    if (val == null || !val.toLowerCase().contains(streetQ)) return false;
+                }
+                if (cityQ != null && !cityQ.isBlank()) {
+                    String val = a.getCity();
+                    if (val == null || !val.toLowerCase().contains(cityQ)) return false;
+                }
+                if (stateQ != null && !stateQ.isBlank()) {
+                    String val = a.getState();
+                    if (val == null || !val.toLowerCase().contains(stateQ)) return false;
+                }
+                if (zipQ != null && !zipQ.isBlank()) {
+                    String val = a.getZipcode();
+                    if (val == null || !val.toLowerCase().contains(zipQ)) return false;
+                }
+                return true;
+            })
+            .collect(java.util.stream.Collectors.toList());
+
+        model.addAttribute("searchResults", results);
+        return "secured/address/search-result";
     }
 
     @GetMapping("/secured/address/new")

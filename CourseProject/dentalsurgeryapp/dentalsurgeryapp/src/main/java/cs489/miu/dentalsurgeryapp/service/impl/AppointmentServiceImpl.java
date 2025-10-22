@@ -65,8 +65,8 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Override
     public Appointment updateAppointment(Appointment appointment) throws AppointmentLimitExceededException, OutstandingBillException {
-        // Validate outstanding bills and weekly limit before updating
-        validatePatientOutstandingBills(appointment);
+        // Per requirements, only check outstanding bills on creation, not update
+        // Still enforce dentist weekly limit on update
         validateDentistWeeklyLimit(appointment);
         return appointmentRepository.save(appointment);
     }
@@ -137,21 +137,45 @@ public class AppointmentServiceImpl implements AppointmentService {
             return; // Cannot validate without dentist and appointment date
         }
         
-        // Calculate the start and end of the week for the appointment date
-        LocalDateTime appointmentDate = appointment.getAppointmentDateTime();
-        LocalDateTime weekStart = appointmentDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-                                                 .withHour(0).withMinute(0).withSecond(0).withNano(0);
-        LocalDateTime weekEnd = appointmentDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY))
-                                               .withHour(23).withMinute(59).withSecond(59).withNano(999999999);
+    // Calculate the start and end of the week for the appointment date (Sunday–Saturday)
+    LocalDateTime appointmentDate = appointment.getAppointmentDateTime();
+    LocalDateTime weekStart = appointmentDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
+                         .withHour(0).withMinute(0).withSecond(0).withNano(0);
+    LocalDateTime weekEnd = appointmentDate.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY))
+                           .withHour(23).withMinute(59).withSecond(59).withNano(999999999);
         
-        // Count existing appointments for this dentist in the same week
+        // Count existing appointments for this dentist in the target (new) week
         long appointmentsInWeek = appointmentRepository.countByDentistAndAppointmentDateTimeBetween(
             appointment.getDentist(), weekStart, weekEnd);
-        
-        // If updating an existing appointment, don't count the current appointment
+
+        // If updating an existing appointment, avoid double-count only when the existing
+        // appointment is for the same dentist and already within the same target week window
         if (appointment.getAppointmentId() != null) {
-            // This is an update, so the existing appointment should not be counted twice
-            appointmentsInWeek--;
+            appointmentRepository.findById(appointment.getAppointmentId()).ifPresent(existing -> {
+                boolean sameDentist = existing.getDentist() != null && appointment.getDentist() != null &&
+                        existing.getDentist().getDentistId().equals(appointment.getDentist().getDentistId());
+                LocalDateTime existingDt = existing.getAppointmentDateTime();
+                boolean existingInTargetWeek = existingDt != null &&
+                        !existingDt.isBefore(weekStart) && !existingDt.isAfter(weekEnd);
+                if (sameDentist && existingInTargetWeek) {
+                    // subtract one to neutralize counting the existing appointment in this week
+                    // (so we evaluate the effect of the move/change correctly)
+                    // Use array wrapper to mutate effectively (or recompute as long): we'll recompute below style
+                }
+            });
+            // Recompute count excluding the current appointment if applicable
+            // Fetch count again but exclude the current appointment ID by filtering after fetch isn't feasible in JPQL here.
+            // Instead, compute properly: if sameDentist && existingInTargetWeek above, just decrement here.
+            Appointment existing = appointmentRepository.findById(appointment.getAppointmentId()).orElse(null);
+            if (existing != null && existing.getDentist() != null && appointment.getDentist() != null) {
+                boolean sameDentist = existing.getDentist().getDentistId().equals(appointment.getDentist().getDentistId());
+                LocalDateTime existingDt = existing.getAppointmentDateTime();
+                boolean existingInTargetWeek = existingDt != null &&
+                        !existingDt.isBefore(weekStart) && !existingDt.isAfter(weekEnd);
+                if (sameDentist && existingInTargetWeek) {
+                    appointmentsInWeek--;
+                }
+            }
         }
         
         // Check if adding this appointment would exceed the limit

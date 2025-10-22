@@ -112,7 +112,11 @@ public class SurgeryLocationServiceImpl implements SurgeryLocationService {
                 .map(existingSurgeryLocation -> {
                     existingSurgeryLocation.setName(surgeryLocation.getName());
                     existingSurgeryLocation.setContactNumber(surgeryLocation.getContactNumber());
-                    existingSurgeryLocation.setLocation(surgeryLocation.getLocation());
+                    // Link address via find-or-create to avoid mutating existing address rows
+                    if (surgeryLocation.getLocation() != null) {
+                        Address managedAddress = addressService.findOrCreateAddress(surgeryLocation.getLocation());
+                        existingSurgeryLocation.setLocation(managedAddress);
+                    }
                     return surgeryLocationRepository.save(existingSurgeryLocation);
                 });
     }
